@@ -1,4 +1,4 @@
-baseurl             = "/"
+baseurl             = "/about"
 builddrafts         = false
 canonifyurls        = true
 contentdir          = "content"
