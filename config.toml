@@ -15,7 +15,7 @@ pluralizelisttitles = false
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [permalinks]
-blog  = "blog/:slug/"
+blog  = "about/:slug/"
 
 [[menu.main]]
 name                   = "Blog"
