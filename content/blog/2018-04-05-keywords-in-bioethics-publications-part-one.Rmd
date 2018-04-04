@@ -76,8 +76,12 @@ for (j in 1:length(files)) {
 
 Before merging the list members together (i.e., the different sections---of rows---of the data set that will ultimately exist), I will remove the columns in which I am not interested; this task simply involves telling dplyr to select the columns of interest. 
 ```{r}
+
 for (i in 1:length(bioeth.data)) {
-  bioeth.data[[i]] <- select(bioeth.data[[i]], PT, AU, AF, TI, SO, DT, DE, ID, AB, C1, CR, TC, Z9, PU, PD, PY,   DI, D2, WC, SC)
+  bioeth.data[[i]] <- select(bioeth.data[[i]], PT, AU, 
+                             AF, TI, SO, DT, DE, ID, AB, 
+                             C1, CR, TC, Z9, PU, PD, PY,
+                             DI, D2, WC, SC)
 }
 ```
 
