@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Bioethics on Brandon Sepulvado</title>
+    <link>/tags/bioethics/</link>
+    <description>Recent content in Bioethics on Brandon Sepulvado</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Thu, 05 Apr 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/bioethics/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Keywords in bioethics publications: part one</title>
+      <link>/about/keywords-in-bioethics-publications-part-one/</link>
+      <pubDate>Thu, 05 Apr 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/about/keywords-in-bioethics-publications-part-one/</guid>
+      <description>In my first post, I am going to begin what will most likely be a three-part series on the evolution of bioethics publications over the last several decade. This post is mostly about getting the data in order and exploring what the amazing tidytext package has to offer.
+Bioethics has emerged over the last several decades from several branches of ethics (e.g., medical and religious) to form a domain with its own set of conceptual and institutional structures.</description>
+    </item>
+    
+  </channel>
+</rss>
