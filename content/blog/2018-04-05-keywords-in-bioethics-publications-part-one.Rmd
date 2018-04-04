@@ -201,7 +201,7 @@ akw.art.final <- data.bioeth.1 %>%
 
 ## Term Frequency-Inverse Document Frequency (tf-idf)
 
-I now want to turn to examining which words are most representative of certain journals and which provide little distinction. Thus, I turn to the tf-idf. Yet, before going any further, I want to create a new object based on the filtering I did a few steps ago; that is, I want to select only those article appearing in journals. 
+I now want to turn to examining which words are most representative of certain journals and which provide little distinction. Thus, I turn to the [tf-idf](https://www.tidytextmining.com/tfidf.html). Yet, before going any further, I want to create a new object based on the filtering I did a few steps ago; that is, I want to select only those article appearing in journals. 
 
 ```{r}
 # with years column
