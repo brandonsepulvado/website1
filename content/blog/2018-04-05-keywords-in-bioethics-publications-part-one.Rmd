@@ -22,10 +22,6 @@ The data I use come from the Web of Science (WoS). On 12 January 2018, I downloa
 
 First, the working directory needs to be set, and the necessary packages need to be loaded. I will load, at a later point, some other packages, but certain functions will be masked. Thus, I will wait to load them.
 
-```{r, include=FALSE, eval=TRUE}
-setwd("C:/Users/Brandon/Google Drive/Papers/bioethics networks")
-```
-
 ```{r, warning=FALSE, results='hide', message=FALSE}
 library(tidytext)
 library(readxl)
@@ -52,10 +48,10 @@ Step 2: create a vector for file names.
 files <- vector(mode = "character", length = length(ranges))
 ```
 
-Step 3: populate the files vector.
-```{r}
+Step 3: populate the files vector. 
+```{r eval=TRUE, include=FALSE}
 for (i in 1:17) {
-  files[i] <- str_c("bioeth", ranges[i], ".xlsx")
+  files[i] <- str_c("C:/Users/Brandon/Google Drive/Papers/bioethics networks/","bioeth", ranges[i], ".xlsx")
 }
 ```
 
@@ -157,19 +153,6 @@ unnest.akw %>%
   head(10)
 ```
 
-Here ia a quick visualization of the words used more than 250 times.
-```{r}
-akw.art.final %>%
-  filter(akw != "bioethics" &
-           akw != "ethics") %>%
-  count(akw, sort = TRUE) %>%
-  filter(n > 250) %>%
-  mutate(akw = reorder(akw, n)) %>% 
-  ggplot(aes(akw, n)) +
-  geom_col() +
-  xlab(NULL) +
-  coord_flip()
-```  
 
 Now, let's look at the journals. The following code shows the number of different publication types present in the data set; the second bit of code shows how many distinct journals are cited.
 ```{r}
