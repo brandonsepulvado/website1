@@ -3,12 +3,12 @@ title: 'Keywords in bioethics publications: part one'
 author: ''
 date: '2018-04-05'
 slug: keywords-in-bioethics-publications-part-one
-categories:
-  - R
-tags:
-  - bioethics
-  - tidytext
-  - Web of Science
+#categories:
+#  - R
+#tags:
+#  - bioethics
+#  - tidytext
+#  - Web of Science
 ---
 
 In my first post, I am going to begin what will most likely be a three-part series on the evolution of bioethics publications over the last several decade. This post is mostly about getting the data in order and exploring what the amazing [tidytext](https://cran.r-project.org/package=tidytext) package has to offer.
