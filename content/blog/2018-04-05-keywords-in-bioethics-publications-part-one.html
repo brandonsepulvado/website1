@@ -13,12 +13,12 @@ slug: keywords-in-bioethics-publications-part-one
 
 
 
-<p>In my first post, I am going to begin what will most likely be a three-part series on the evolution of bioethics publications over the last several decade. This post is mostly about getting the data in order and exploring what the amazing <a href="https://cran.r-project.org/package=tidytext">tidytext</a> package has to offer.</p>
-<p>Bioethics has emerged over the last several decades from several branches of ethics (e.g., medical and religious) to form a domain with its own set of conceptual and institutional structures. In this brief document, I examine the conceptual structure of bioethics in the English-speaking world and will eventually get around to relating this to its institutional structure.</p>
+<p>In my first post, I am going to begin what will most likely be a three-part series on the evolution of bioethics publications over the last several decades. This post is mostly about getting the data in order and exploring what the amazing <a href="https://cran.r-project.org/package=tidytext">tidytext</a> package has to offer.</p>
+<p>Bioethics has emerged over the last several decades from several branches of ethics (e.g., medical and religious) to form a domain with its own set of conceptual and institutional structures. In this series of posts (and the associated paper), I examine the conceptual structure of bioethics in the English-speaking world.</p>
 <p>The data I use come from the Web of Science (WoS). On 12 January 2018, I downloaded all records of all types of texts (e.g., journal articles, books) written between 1900 and 2018 in English, as indicated by the title (TI) or subject (TS) fields, containing the stem “bioethic”; records came from the WoS Core COllection: SCI Expanded, SSCI, A&amp;HCI, CPCI-S, CPCI-SSH, and ESCI. 8,150 records met these criteria. Unfortunately, given the licensing requirements, I cannot make the data available.</p>
 <div id="preliminaries" class="section level2">
 <h2>Preliminaries</h2>
-<p>First, the working directory needs to be set, and the necessary packages need to be loaded. I will load, at a later point, some other packages, but certain functions will be masked. Thus, I will wait to load them.</p>
+<p>First, the necessary packages need to be loaded. I will load, at a later point, some other packages, but certain important functions will be masked. Thus, I will wait to load them.</p>
 <pre class="r"><code>library(tidytext)
 library(readxl)
 library(dplyr)
@@ -30,12 +30,12 @@ library(igraph)</code></pre>
 <div id="getting-the-data" class="section level2">
 <h2>Getting the data</h2>
 <p>Because the records I will analyze are fairly circumscribed (n = 8,150), I did not use the API to download a single data file; rather, I used the GUI within the WoS to download the information. As a result, I could only download 500 records at a time, which gave me a series of several files needing to be merged.</p>
-<p>I used a standardized naming convention when downloading the files, so the first the I do is create a list of file names that will be used to load the individual data files into a list. For this section, I used .xlsx files on tab separated filed provided by the WoS.</p>
+<p>I used a standardized naming convention when downloading the files, so the first thing I do is create a list of file names that will be used to load the individual data files into another list. For this section, I used .xlsx files on tab separated filed provided by the WoS.</p>
 <p>Step one: create a vector a record ranges.</p>
 <pre class="r"><code>ranges &lt;- c(&quot;1-499&quot;, &quot;500-999&quot;, &quot;1000-1499&quot;, &quot;1500-1999&quot;, &quot;2000-2499&quot;, &quot;2500-2999&quot;, &quot;3000-3499&quot;, &quot;3500-3999&quot;, &quot;4000-4499&quot;, &quot;4500-4999&quot;, &quot;5000-5499&quot;, &quot;5500-5999&quot;, &quot;6000-6499&quot;, &quot;6500-6999&quot;, &quot;7000-7499&quot;, &quot;7500-7999&quot;, &quot;8000-8150&quot;)</code></pre>
 <p>Step 2: create a vector for file names.</p>
 <pre class="r"><code>files &lt;- vector(mode = &quot;character&quot;, length = length(ranges))</code></pre>
-<p>Step 3: populate the files vector.</p>
+<p>Step 3: populate the files vector (not shown).</p>
 <p>Everything looks on track at this point. However, before importing these files into R, I first want to create an empty list for which each of the corresponding .xlsx files will constitute a member.</p>
 <pre class="r"><code>bioeth.data &lt;- vector(&quot;list&quot;, length(files))</code></pre>
 <p>This code creates the <code>bioeth.data</code> list, which has the same length as the <code>files</code> vector. Running the following, we see that everything looks good.</p>
@@ -97,15 +97,15 @@ library(igraph)</code></pre>
                       book.doi = D2,
                       wos.categs = WC,
                       research.areas = SC)</code></pre>
-<p>With the <code>rename</code> function of the <code>dplyr</code> package, the new variable names go first.</p>
+<p>With the <code>rename</code> function of the dplyr package, the new variable names go first.</p>
 </div>
 <div id="individual-keywords" class="section level2">
 <h2>Individual Keywords</h2>
-<p>Now that the data have been imported, I want to look at the use of single keywords. Before getting going any further, I want to add a unique numerical identifer for each record. The WoS provides multiple options, such as the DOI, but even these have missing data.</p>
+<p>Now that the data have been imported, I will look at the use of single keywords. Before getting going any further, I want to add a unique numerical identifer for each record. The WoS provides multiple options, such as the DOI, but even these have missing data.</p>
 <pre class="r"><code>data.bioeth.1 &lt;- data.bioeth %&gt;% 
   mutate(article.id = seq(from = 1, to = nrow(data.bioeth), by = 1))</code></pre>
 <p>The goal of this section is to examine keywords provided by the author (<code>author.keywords</code>), which are currently stored in a single cell. In addition, I want to remove stop words and records for which no keywords were provided (NA). However, the words would still be stored within a single cell.</p>
-<p>The <code>unnest</code> command helps. From each cell, it removes punctuation, restructures the data such that a single keyword populates a single keyword cell, and transfers any other information on the record to the new rows. Basically, whereas previously each record had one row, a WoS record now has as many rows as it has keywords. The <code>filter</code> command removes NAs, and the <code>anti_join</code> command removes stop words; in the latter, we must specify from which column to remove the stop words. (If the column of keywords were named “word”, this extra step would be unnecessary.)</p>
+<p>The <code>unnest</code> command from the tidytext package helps. From each cell, it removes punctuation, restructures the data such that a single keyword populates a single keyword cell, and transfers any other information on the record to the new rows. Basically, whereas previously each record had one row, a WoS record now has as many rows as it has keywords. The <code>filter</code> command removes NAs, and the <code>anti_join</code> command removes stop words; in the latter, we must specify from which column to remove the stop words. (If the column of keywords were named “word”, this extra step would be unnecessary.)</p>
 <pre class="r"><code>data(&quot;stop_words&quot;)
 unnest.akw &lt;- data.bioeth.1 %&gt;%
   filter(!is.na(author.keywords)) %&gt;%
@@ -148,7 +148,7 @@ unnest.akw &lt;- data.bioeth.1 %&gt;%
 ##  8 informed   264
 ##  9 clinical   260
 ## 10 autonomy   228</code></pre>
-<p>Now, let’s look at the journals. The following code shows the number of different publication types present in the data set; the second bit of code shows how many distinct journals are cited.</p>
+<p>Now, let’s look at the journals. The following code shows the number of different publication types present in the data set and how many distinct journals are cited.</p>
 <pre class="r"><code>unnest.akw %&gt;%
   summarise(n_distinct(pub.type), n_distinct(pub.name))</code></pre>
 <pre><code>## # A tibble: 1 x 2
@@ -184,14 +184,20 @@ unnest.akw &lt;- data.bioeth.1 %&gt;%
   filter(pub.type == &quot;J&quot;) %&gt;%
   count(pub.name, sort = TRUE) %&gt;%
   ggplot(aes(n)) +
-  geom_histogram(show.legend = FALSE) </code></pre>
+  geom_histogram(show.legend = FALSE) +
+  xlab(&quot;Number of times cited&quot;) +
+  ylab(&quot;Count&quot;) +
+  ggtitle(&quot;Histogram of journal citation counts&quot;)</code></pre>
 <p><img src="/blog/2018-04-05-keywords-in-bioethics-publications-part-one_files/figure-html/count.journal.appearances-1.png" width="672" /></p>
 <pre class="r"><code>unnest.akw %&gt;% 
   filter(pub.type == &quot;J&quot;) %&gt;%
   count(pub.name, sort = TRUE) %&gt;%
   ggplot(aes(n)) +
   geom_histogram(show.legend = FALSE) +
-  xlim(0, 250)</code></pre>
+  xlim(0, 250) +
+  xlab(&quot;Number of times cited&quot;) +
+  ylab(&quot;Count&quot;) +
+  ggtitle(&quot;Histogram of journal citation counts, adjusted x-axis&quot;)</code></pre>
 <p><img src="/blog/2018-04-05-keywords-in-bioethics-publications-part-one_files/figure-html/count.journal.appearances-2.png" width="672" /></p>
 </div>
 <div id="creating-primary-data-object" class="section level3">
@@ -226,7 +232,7 @@ akw.j.years.final &lt;- akw.art.final %&gt;%
          year = year.pub) %&gt;%
   count(keyword, journal, year, sort = TRUE)</code></pre>
 <p>These two objects also contain <code>n</code>, a column indicating how frequently each author keyword (<code>akw</code>) occurs within each journal.</p>
-<p>To calculate the tf_idf, I need the weighted edge list, in which keywords are linked to the journals in which they appear, as well as the total number of time keywords appearing in a given journal. The <code>akw.j.noyears.final</code> is essentially a weighted edge list between keywords and journals, and <code>total.words</code> contains the total number of keyword occurences in a journal. The tidytext package makes calculating the tf_idf quite easy.</p>
+<p>To calculate the tf_idf, I need the weighted edge list, in which keywords are linked to the journals in which they appear, as well as the total number of times keywords appear in a given journal. The <code>akw.j.noyears.final</code> is essentially a weighted edge list between keywords and journals, and <code>total.words</code> contains the total number of keyword occurences in a journal. The tidytext package makes calculating the tf_idf quite easy.</p>
 <pre class="r"><code>total.words &lt;- akw.j.noyears.final %&gt;% 
   group_by(journal) %&gt;% 
   summarize(total = sum(n))
@@ -333,12 +339,13 @@ keyword.evo %&gt;%
 ## # ... with 4,958 more rows</code></pre>
 <pre class="r"><code>ggplot(keyword.evo, aes(num.yrs.active)) +
   geom_histogram(show.legend = FALSE) + 
-  theme_minimal()</code></pre>
+  theme_minimal() +
+  xlab(&quot;Number of years active&quot;) +
+  ylab(&quot;Count&quot;) +
+  ggtitle(&quot;Histogram of number of years in which keywords are used&quot;)</code></pre>
 <p><img src="/blog/2018-04-05-keywords-in-bioethics-publications-part-one_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
 <p>The next variable I am creating is a logical indicator for whether <em>keywords that are cited in more than one year</em> are cited in <em>consecutive</em> years. If they are not cited in more than one year, they have a value of NA; if they are used in more than one year, the value is TRUE when used consecutively and FALSE when there is a gap of more than one year in the use.</p>
-<pre class="r"><code># create non-consecutive logical indicator
-# when not used in more than one year == NA
-keyword.evo$consec &lt;- NA
+<pre class="r"><code>keyword.evo$consec &lt;- NA
 for (i in 1:nrow(keyword.evo)) {
   year.temp &lt;- test.bind %&gt;%
     filter(keyword == keyword.evo$keyword[i]) %&gt;%
@@ -391,7 +398,10 @@ consec.evo &lt;- bind_rows(consec.true, consec.false,
 
 consec.evo %&gt;%
   ggplot(aes(x = year, y = n, color = consec)) +
-  geom_line()</code></pre>
+  geom_line() +
+  xlab(&quot;Year&quot;) +
+  ylab(&quot;Keyword count&quot;) +
+  ggtitle(&quot;Trends in keyword usage by consec type&quot;)</code></pre>
 <p><img src="/blog/2018-04-05-keywords-in-bioethics-publications-part-one_files/figure-html/year.distrib.consec-1.png" width="672" /></p>
 <p>The drastic growth of the FALSE group means that, as time progresses, keywords that are used more than once are being increasingly used inconsistently from year to year. This pattern might indicate recyling.</p>
 <p>Before going on, let’s visualize the <code>num.yrs.active</code> by the <code>consec</code> group.</p>
@@ -401,8 +411,8 @@ consec.evo %&gt;%
   geom_density() +
   xlab(&quot;Number of years a keyword is active&quot;) +
   ylab(&quot;Density&quot;) +
-  #ggtitle(&quot;Distribution of years active by whether consecutive&quot;)
-  theme_minimal()</code></pre>
+  ggtitle(&quot;Distribution of years active by whether consecutive&quot;) +
+  theme_minimal() </code></pre>
 <p><img src="/blog/2018-04-05-keywords-in-bioethics-publications-part-one_files/figure-html/unnamed-chunk-23-1.png" width="672" /> The distibution for each group seems quite different in terms of the keyword “lifespan”. <em>Why?</em></p>
 </div>
 </div>
