@@ -59,7 +59,7 @@ github                 = "//github.com/brandonsepulvado"
 lang                   = "en"
 linkedin               = "//linkedin.com/in/brandonsepulvado"
 noshowreadtime         = false                         # if true, don't show "<x> minutes read" in posts
-selfintro              = "Computational Social Science"                            # appears in the site header when set to a non-empty string
+selfintro              = ""                            # appears in the site header when set to a non-empty string
 twitter                = "//twitter.com/brsepulvado"
 #mastodon               = "//example.com/@you"
 
