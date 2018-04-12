@@ -1,4 +1,4 @@
-baseurl             = "dreamy-shaw-030284.netlify.com"
+baseurl             = "/"
 builddrafts         = false
 canonifyurls        = true
 contentdir          = "content"
