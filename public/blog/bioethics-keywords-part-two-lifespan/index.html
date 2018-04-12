@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<meta name="HandheldFriendly" content="True">
+<meta name="MobileOptimized" content="320">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<meta name="author" content="Brandon Sepulvado">
+<meta name="description" content="I ended the last post by highlighting differences in keywords of publications related to bioethics on the Web of Science that were used in consecutive years, in multiple but non-consectuive years, and in only a single year. In this post, I will predict the number of years in which a keyword is used to categorize journal articles.
+VisualizationsBefore employing statistical models, it would be prudent to examine visually the data.">
+
+<meta property="og:title" content="Bioethics keywords: part two, lifespan" />
+<meta property="og:description" content="I ended the last post by highlighting differences in keywords of publications related to bioethics on the Web of Science that were used in consecutive years, in multiple but non-consectuive years, and in only a single year. In this post, I will predict the number of years in which a keyword is used to categorize journal articles.
+VisualizationsBefore employing statistical models, it would be prudent to examine visually the data." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/bioethics-keywords-part-two-lifespan/" />
+
+
+
+<meta property="article:published_time" content="2018-04-09T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-04-09T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+
+<title>
+
+
+     Bioethics keywords: part two, lifespan 
+
+</title>
+<link rel="canonical" href="/blog/bioethics-keywords-part-two-lifespan/">
+
+
+
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+
+
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Ubuntu+Mono:400,400i,700,700i|Raleway:500">
+
+
+
+    
+    <link rel="stylesheet" href="/css/reset.css?t=2018-04-12%2019%3a31%3a26.0589787%20%2b0200%20CEST%20m%3d%2b0.129205101">
+    <link rel="stylesheet" href="/css/pygments.css?t=2018-04-12%2019%3a31%3a26.0589787%20%2b0200%20CEST%20m%3d%2b0.129205101">
+    <link rel="stylesheet" href="/css/main.css?t=2018-04-12%2019%3a31%3a26.0589787%20%2b0200%20CEST%20m%3d%2b0.129205101">
+    
+        <link rel="stylesheet" href="/css/override.css?t=2018-04-12%2019%3a31%3a26.0589787%20%2b0200%20CEST%20m%3d%2b0.129205101">
+    
+
+
+
+
+<link rel="shortcut icon"
+
+    href="/img/profilepic2.jpg"
+
+>
+
+
+
+
+
+
+
+
+</head>
+
+
+<body lang="en">
+
+<section class="header">
+    <div class="container">
+        <div class="content">
+            
+                
+                
+                
+                
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                
+                <a href="/"><img class="avatar" src="/img/profilepic2.jpg" srcset="/img/profilepic2.jpg 1x"></a>
+            
+            <a href="/"><div class="name">Brandon Sepulvado</div></a>
+            
+            <nav>
+                <ul>
+                    
+                        <li class="nav-blog"><a href="/blog/"><span>Blog</span></a></li>
+                    
+                        <li class="nav-about"><a href="/about/"><span>About</span></a></li>
+                    
+                        <li class="nav-publications"><a href="/publications/"><span>Publications</span></a></li>
+                    
+                </ul>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<section class="icons">
+    <div class="container">
+        <div class="content">
+        
+            <a href="//github.com/brandonsepulvado" target="_blank" rel="noopener"><img class="icon" src="/img/github.svg" alt="github" /></a>
+        
+
+        
+            <a href="//twitter.com/brsepulvado" target="_blank" rel="noopener"><img class="icon" src="/img/twitter.svg" alt="twitter" /></a>
+        
+
+	
+
+        
+
+        
+
+        
+            <a href="//linkedin.com/in/brandonsepulvado" target="_blank" rel="noopener"><img class="icon" src="/img/linkedin.svg" alt="linkedin" /></a>
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+            <a href="mailto:bsepulva@nd.edu"><img class="icon" src="/img/email.svg" alt="email" /></a>
+        
+
+        
+
+        
+        </div>
+    </div>
+</section>
+
+
+<section class="main post non-narrow zero-top-spacing">
+    <div class="container">
+        <div class="content">
+            <div class="front-matter">
+                <div class="title-container">
+                    <div class="page-heading">
+
+    Bioethics keywords: part two, lifespan
+
+</div>
+
+                    <div class="initials"><a href="/">ad</a></div>
+                </div>
+                <div class="meta">
+                    
+                    <div class="date" title='Mon Apr 9 2018 00:00:00 UTC'>Apr 9, 2018</div>
+                    
+                    
+		    <div class="reading-time"><div class="middot"></div>16 minutes read</div>
+                    
+                </div>
+            </div>
+            <div class="markdown">
+                <p>I ended the last post by highlighting differences in keywords of publications related to bioethics on the Web of Science that were used in consecutive years, in multiple but non-consectuive years, and in only a single year. In this post, I will predict the number of years in which a keyword is used to categorize journal articles.</p>
+<div id="visualizations" class="section level2">
+<h2>Visualizations</h2>
+<p>Before employing statistical models, it would be prudent to examine visually the data. Here are the visualizations with which I ended the previous blog post.</p>
+<pre class="r"><code>consec.evo &lt;- consec.evo %&gt;% 
+  mutate(usage.type = case_when(
+    consec == TRUE ~ &quot;Persist&quot;,
+    consec == FALSE ~ &quot;Recur&quot;,
+    is.na(consec) ~ &quot;Single&quot;
+  ))
+
+consec.evo %&gt;%
+  ggplot(aes(x = year, y = n, color = usage.type)) +
+  geom_line() +
+  xlab(&quot;Year&quot;) +
+  ylab(&quot;Keyword count&quot;) +
+  ggtitle(&quot;Trends in keyword usage by usage type&quot;) </code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/unnamed-chunk-1-1.png" width="672" /> For this visualization, I renamed the <code>consec</code> variable and its levels to <code>usage.type</code> and persist, recur, and single. Persist indicates that a keyword has been used in multiple, consecutive years, and recur indicates that a keyword has been used in multiple, non-consecutive years. Single refers to keywords that have been employed in only one year. Over this roughly 27 year period, recurrent keywords categorize articles the most frequently and at an increasing rate. Persistent and single-use keywords occur at roughly the same rate, although there is a marked difference starting around 2013.</p>
+<p>Now, let’s examine visually the distributions of the number of years for the persist and recur usage types.</p>
+<pre class="r"><code>keyword.evo %&gt;%
+  filter(!is.na(consec)) %&gt;% # NA = one year
+  ggplot(aes(num.yrs.active, color = consec, fill = consec)) +
+  geom_density(alpha = .5) +
+  scale_fill_discrete(name=&#39;Usage group&#39;,labels=c(&quot;Recur&quot;, &quot;Persist&quot;))+
+  scale_color_discrete(name=&#39;Usage group&#39;,labels=c(&quot;Recur&quot;, &quot;Persist&quot;)) +
+  xlab(&quot;Number of years a keyword is active&quot;) +
+  ylab(&quot;Density&quot;) +
+  ggtitle(&quot;Distribution of years active by whether consecutive&quot;) +
+  theme_minimal() </code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/unnamed-chunk-2-1.png" width="672" /> The two distributions appear to differ greatly. Recur has more density spread farthest along the x axis, but persist has the highest maximum value. These two groups clearly exhibit distinct behaviors.</p>
+<p>The models below will investigate these group differences in the number of years during which a keyword is active, but I first want to examine in further detail the patterns of usage among keywords that are employed during multiple years. The next chunk of code creates a new object called <code>year.diffs</code>. To do so, I isolate the distinct years in which each unique keyword is used, take the difference between adjacent years in the vector (assigned to a variable called <code>diffs</code>), and then note the position of each difference in the vector of differences (assigned to a variable called <code>position</code>). I also include a <code>keyword</code> variable to identify to which keyword the differences and positions refer. Each row is uniquely identified by <code>keyword</code> plus <code>position</code>, as <code>diffs</code> might have multiple equivalent values for a given keyword.</p>
+<pre class="r"><code>year.diffs &lt;- vector(&quot;list&quot;, length = nrow(test.bind))
+for (i in 1:length(year.diffs)) {
+  year.diffs[[i]] &lt;- test.bind %&gt;%
+    filter(keyword == keyword.evo$keyword[i]) %&gt;%
+    distinct(year) %&gt;%
+    as.matrix() %&gt;%
+    diff() %&gt;%
+    as.data.frame() %&gt;%
+    mutate(keyword = keyword.evo$keyword[i])
+}
+year.diffs &lt;- bind_rows(year.diffs)
+year.diffs &lt;- year.diffs %&gt;%
+  select(-.) %&gt;%
+  rename(diffs = year) %&gt;%
+  group_by(keyword) %&gt;%
+  mutate(position = 1:n()) 
+year.diffs &lt;- year.diffs %&gt;%
+  ungroup()
+
+head(year.diffs)</code></pre>
+<pre><code>## # A tibble: 6 x 3
+##   diffs keyword position
+##   &lt;dbl&gt; &lt;chr&gt;      &lt;int&gt;
+## 1 19.0  healing        1
+## 2  2.00 healing        2
+## 3  5.00 healing        3
+## 4  4.00 culture        1
+## 5  4.00 culture        2
+## 6  1.00 culture        3</code></pre>
+<p>The <code>head()</code> function at the end of this code provides an idea about the organization of <code>year.diffs</code>. For example, one can see that healing appears three times in this object, which means that it originally was used during four years. There was a gap of 19 years between its first and second years used, 2 yeas between its second and third years used, and 5 between its third and fourth years used.</p>
+<p>Given the large number of keywords that appear in multiple years with at least one non-consecutive jump, let’s check out the histogram of the maximum non-consecutive differences. The x-axis will begin at 2 because that is the smallest non-consecutive difference.</p>
+<pre class="r"><code>year.diffs %&gt;%
+  filter(diffs &gt; 1) %&gt;% 
+  group_by(keyword) %&gt;%
+  summarise(diffs.max = max(diffs)) %&gt;%
+  ggplot(aes(diffs.max)) +
+  geom_histogram() +
+  ggtitle(&quot;Density plot of max non-consecutive year differences&quot;) +
+  xlim(2, 30) +
+  xlab(&quot;Maximum non-consecutive difference in years used&quot;) +
+  ylab(&quot;Number of occurrences&quot;)</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Now, I want to know, for each non-consecutive sequence, how many times are there non-consecutive years?</p>
+<pre class="r"><code>year.diffs %&gt;%
+  group_by(keyword) %&gt;%
+  filter(diffs &gt; 1) %&gt;%
+  summarise(num = n()) %&gt;%
+  summarise(n_distinct(num)) # 9 distinct values</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   `n_distinct(num)`
+##               &lt;int&gt;
+## 1                 9</code></pre>
+<pre class="r"><code>year.diffs %&gt;%
+  group_by(keyword) %&gt;%
+  filter(diffs &gt; 1) %&gt;%
+  summarise(num = n()) %&gt;%
+  ggplot(aes(as.factor(num))) +
+    geom_bar(show.legend = FALSE) +
+    xlab(&quot;Number of non-consecutive usages&quot;) +
+    ylab(&quot;Count&quot;) +
+    ggtitle(&quot;Frequency of unique values of non-consecutive uses&quot;)</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/num.nonsec-1.png" width="672" /> This bar graph suggests that the plurality of nonconsecutively used keywords have only one nonconsecutive break, yet there is a considerable portion of other cases have multiple nonconsecutive breaks.</p>
+<p>I also want to know when different sized breaks in continuity occur; the following graph will plot the difference position against the difference magnitude.</p>
+<pre class="r"><code>ggplot(year.diffs, aes(position, diffs)) +
+  geom_jitter(aes(color = as.factor(position)), show.legend = FALSE) +
+  xlab(&quot;Position&quot;) +
+  ylab(&quot;Difference&quot;) +
+  ggtitle(&quot;Plot of differences by position&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/unnamed-chunk-5-1.png" width="672" /> This jitter plot presents interesting results. Similar to a boxplot, this graphic allows one to see the density of inter-year differences for each position. The minimum position is one (because a keyword must be used at least twice to have a difference).</p>
+<p>This is a boxplot of the same data.</p>
+<pre class="r"><code>year.diffs %&gt;%
+  ggplot(aes(position, diffs)) +
+  geom_boxplot(aes(group = as.factor(position)))</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/unnamed-chunk-6-1.png" width="672" /> This boxplot does not look as nice as the jitter plot. More importantly, while it does indicate outliers, much of the information is incomprehensible due to the tight clustering of cases near zero.</p>
+</div>
+<div id="model-estimation" class="section level2">
+<h2>Model estimation</h2>
+<p>Before I get to the model estimation, it is necessary to provide an overview of my analytic strategy. The basic unit in the models will be the keyword, which means the predictors will need to be attributes about the keyword, but what attributes—aside from the number of active years and usage group—are present in the data? Without getting into too much theoretical justification (this will be in the forthcoming paper), I am interested in how relational attributes of keywords qua product categories in the academic/scientific market influence their lifecycle.</p>
+<p>One may derive networks among the keywords because each keyword occurence is associated with a unique journal article. Two approaches to arriving at this network present themselves. First, one may create a bipartite network in which keywords are connected to journal articles; second, one may employ the tidytext package to create bigrams from the author keyword cell. These approaches ultimately can result in the same data structure, and I will use both in this series on bioethics keywords. Two keywords will be connected if they were used to describe the same journal article, and the weight of their relationship will correspond to the number of papers in which they co-occured.</p>
+<p>What are the attributes in which I am interested? The first two are degree and the local clustering coefficient: that is, the number of keywords to which each keyword is connected and how densely each of the keywords to which a focal keyword is connected are linked among themselves. Degree and clustering would seem to be positively related to the number of years in which a keyword is employed. If a keyword is related to many others, then it might be used more, which would increase the likelihood of its extended temporal distribution, and, if the keyword is a member of a densely connected group of keywords, then they might form a subspeciality associated with an active community of scholars. The remaining attributes pertain to the distribution of weights within the <a href="http://faculty.ucr.edu/~hanneman/nettext/C9_Ego_networks.html">ego network</a> (the set of relationships in which a focal keyword is involved) of each keyword.</p>
+<p>The first things I will do is to determine which type of count model is best to estimate given the data; I here adjudicate between the two main contenders: Poisson and negative binomial regression models. For a good introduction to choosing between these two model types, check out <a href="https://stats.idre.ucla.edu/r/dae/negative-binomial-regression/">UCLA’s Institute for Digital Research and Education</a>.</p>
+<p>Before I go any further, I want to remove keywords in the “single” usage group because it perfectly predicts a <code>num.yrs.active</code> value of one. I also create a new variable, which is simply a factor version of <code>consec</code>.</p>
+<pre class="r"><code>keyword.data.0 &lt;- keyword.data.0 %&gt;% 
+  mutate(consec.factor = as.factor(consec))
+
+keyword.data.reduced &lt;- keyword.data.0 %&gt;% 
+  filter(consec.factor != &quot;single&quot;)</code></pre>
+<p>The following summary indcates the variance is greater than the mean, which suggests that a negative bionomial model is more appropriate.</p>
+<pre class="r"><code>keyword.data.reduced %&gt;% 
+  filter(!is.na(num.yrs.active)) %&gt;% 
+  summarise(var(num.yrs.active), mean(num.yrs.active))</code></pre>
+<pre><code>## # A tibble: 1 x 2
+##   `var(num.yrs.active)` `mean(num.yrs.active)`
+##                   &lt;dbl&gt;                  &lt;dbl&gt;
+## 1                  23.9                   5.54</code></pre>
+<p>However, we can explicitly test this by running both types of model and then using a likelihood ratio test for a comparison. I present the comparison between two base models containing only degree and local clustering coefficient, but the sustantive takeaway remains unchanged with the later models.</p>
+<pre class="r"><code># negative binomial model
+# MASS masks select from dplyr and tidygraph
+nb.0 &lt;- MASS::glm.nb(num.yrs.active ~ degree + lcc,
+                             data = keyword.data.reduced,
+                     control=glm.control(maxit=50))
+# poisson model
+pois.0 &lt;- glm(num.yrs.active ~ degree + lcc, 
+              family = &quot;poisson&quot;,
+              data = keyword.data.reduced)
+
+screenreg(list(pois.0, nb.0),
+          custom.model.names = c(&quot;Poisson&quot;, &quot;Negative Binomial&quot;))</code></pre>
+<pre><code>## 
+## ===============================================
+##                 Poisson       Negative Binomial
+## -----------------------------------------------
+## (Intercept)         3.27 ***      3.12 ***     
+##                    (0.03)        (0.04)        
+## degree              0.00 ***      0.01 ***     
+##                    (0.00)        (0.00)        
+## lcc                -3.59 ***     -3.32 ***     
+##                    (0.07)        (0.08)        
+## -----------------------------------------------
+## AIC              9770.43       9599.46         
+## BIC              9787.54       9622.27         
+## Log Likelihood  -4882.22      -4795.73         
+## Deviance         2420.53       1682.69         
+## Num. obs.        2215          2215            
+## ===============================================
+## *** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05</code></pre>
+<pre class="r"><code># which is preferable
+chi2 &lt;- 2 * (logLik(nb.0) - logLik(pois.0))
+pchi2 &lt;- pchisq(2 * (logLik(nb.0) - logLik(pois.0)), df = 1, lower.tail = FALSE)
+print(paste0(&quot;Chi-squared value &quot;, chi2))</code></pre>
+<pre><code>## [1] &quot;Chi-squared value 172.977326540651&quot;</code></pre>
+<pre class="r"><code>print(paste0(&quot;P-value for chi-squared &quot;, pchi2))</code></pre>
+<pre><code>## [1] &quot;P-value for chi-squared 1.65546825142021e-39&quot;</code></pre>
+<p>As shown in the table, the log counts produced by the two models are pretty similar, with the local clustering coefficient having the largest discrepancy. The likelihood ratio test and its corresponding p-value indicate that the negative binomial model is preferable. I will employ negative binomial regression for the following models.</p>
+<p>The next two models add attributes about tie weights (i.e., mean and range) as well as the <code>consec</code> category.</p>
+<pre class="r"><code>nb.1 &lt;- MASS::glm.nb(num.yrs.active ~ degree + lcc + mean + range,
+                     data = keyword.data.reduced,
+                     control=glm.control(maxit=100))
+
+nb.2 &lt;- MASS::glm.nb(num.yrs.active ~ degree + lcc  + mean + range +
+                       consec.factor,
+                     data = keyword.data.reduced,
+                     control=glm.control(maxit=100),
+                     na.action = na.exclude)
+
+screenreg(list(nb.0, nb.1, nb.2),
+          custom.coef.names = c(&quot;Intercept&quot;,
+                              &quot;Degree&quot;,
+                              &quot;Clustering&quot;,
+                              &quot;Mean (ego weight)&quot;,
+                              &quot;Range (ego weight)&quot;,
+                              &quot;Recur&quot;))</code></pre>
+<pre><code>## 
+## ============================================================
+##                     Model 1       Model 2       Model 3     
+## ------------------------------------------------------------
+## Intercept               3.12 ***      3.10 ***      2.86 ***
+##                        (0.04)        (0.04)        (0.07)   
+## Degree                  0.01 ***      0.01 ***      0.01 ***
+##                        (0.00)        (0.00)        (0.00)   
+## Clustering             -3.32 ***     -3.33 ***     -3.27 ***
+##                        (0.08)        (0.08)        (0.08)   
+## Mean (ego weight)                     0.02 ***      0.02 ***
+##                                      (0.00)        (0.00)   
+## Range (ego weight)                   -0.01 ***     -0.01 ***
+##                                      (0.00)        (0.00)   
+## Recur                                               0.22 ***
+##                                                    (0.06)   
+## ------------------------------------------------------------
+## AIC                  9599.46       9590.54       9576.68    
+## BIC                  9622.27       9624.76       9616.60    
+## Log Likelihood      -4795.73      -4789.27      -4781.34    
+## Deviance             1682.69       1680.90       1674.33    
+## Num. obs.            2215          2215          2215       
+## ============================================================
+## *** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05</code></pre>
+<p>The predictors added in Models 2 and 3 are significant at the p &lt; .001 level, and the indicators at the bottom of the table suggest that there is a general immprovement. However, let’s run some tests to have further certainty.</p>
+<pre class="r"><code>nb.1.update &lt;- update(nb.1, . ~ . - mean - range)
+## test model differences with chi square test
+anova(nb.1, nb.1.update) # two degree-of-freedom chi-square test</code></pre>
+<pre><code>## Likelihood ratio tests of Negative Binomial Models
+## 
+## Response: num.yrs.active
+##                         Model    theta Resid. df    2 x log-lik.   Test
+## 1                degree + lcc 17.80100      2212       -9591.456       
+## 2 degree + lcc + mean + range 18.22467      2210       -9578.543 1 vs 2
+##      df LR stat.     Pr(Chi)
+## 1                           
+## 2     2 12.91285 0.001570399</code></pre>
+<p>This two degree-of-freedom chi-squared test indicates that Model 2 is preferable to Model 1. How does Model 2 compare to Model 3?</p>
+<pre class="r"><code>nb.2.update &lt;- update(nb.2, . ~ . - consec.factor)
+anova(nb.2, nb.2.update)</code></pre>
+<pre><code>## Likelihood ratio tests of Negative Binomial Models
+## 
+## Response: num.yrs.active
+##                                         Model    theta Resid. df
+## 1                 degree + lcc + mean + range 18.22467      2210
+## 2 degree + lcc + mean + range + consec.factor 18.59242      2209
+##      2 x log-lik.   Test    df LR stat.      Pr(Chi)
+## 1       -9578.543                                   
+## 2       -9562.682 1 vs 2     1  15.8606 6.818372e-05</code></pre>
+<p>These results confirm the intuition from the table: Model 3 is the most preferable model.</p>
+<p>Before interpreting Model 3, I will display again the results, and I will also include a coefficient plot from the <code>texreg</code> package. A one unit increase in degree (i.e., a keyword having one extra connection to another keyword) corresponds to a miniscule .00676 increase in the log number of active years, and a one unit increase in the local clustering coefficient predicts a 3.27 decrease in a keyword’s log number of active years. The two attributes concerning the weights of ties in which a keyword is involved exhibit opposite effects. A one unit increase in the mean tie weight corresponds to a .0164 increase in the log number of active years, while, for a one unit increase in the range of a keyword’s ego network tie weights, the expected log number of active years decreases by .0143. Compared to keywords that appear in consecutive years (“persist”), non-consecutive words have a log number of active years that is higher by .220.</p>
+<pre class="r"><code>summary(nb.2)</code></pre>
+<pre><code>## 
+## Call:
+## MASS::glm.nb(formula = num.yrs.active ~ degree + lcc + mean + 
+##     range + consec.factor, data = keyword.data.reduced, na.action = na.exclude, 
+##     control = glm.control(maxit = 100), init.theta = 18.59241688, 
+##     link = log)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -5.3945  -0.6687  -0.1368   0.4440   3.3291  
+## 
+## Coefficients:
+##                      Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)         2.8582343  0.0705716  40.501  &lt; 2e-16 ***
+## degree              0.0067637  0.0004916  13.758  &lt; 2e-16 ***
+## lcc                -3.2703948  0.0790910 -41.350  &lt; 2e-16 ***
+## mean                0.0164384  0.0037479   4.386 1.15e-05 ***
+## range              -0.0143303  0.0036717  -3.903 9.50e-05 ***
+## consec.factorrecur  0.2195409  0.0550104   3.991 6.58e-05 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for Negative Binomial(18.5924) family taken to be 1)
+## 
+##     Null deviance: 5433.4  on 2214  degrees of freedom
+## Residual deviance: 1674.3  on 2209  degrees of freedom
+## AIC: 9576.7
+## 
+## Number of Fisher Scoring iterations: 1
+## 
+## 
+##               Theta:  18.59 
+##           Std. Err.:  1.80 
+## 
+##  2 x log-likelihood:  -9562.682</code></pre>
+<pre class="r"><code>plotreg(nb.2)</code></pre>
+<pre><code>## Model 1: bars denote 0.5 (inner) resp. 0.95 (outer) confidence intervals (computed from standard errors).</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/nb.2.interp-1.png" width="672" /></p>
+<p>Let’s also look at the results as incidence rates.</p>
+<pre class="r"><code>est &lt;- cbind(Estimate = coef(nb.2), confint(nb.2))
+exp(est)</code></pre>
+<pre><code>##                       Estimate       2.5 %      97.5 %
+## (Intercept)        17.43072183 15.10498804 20.08741103
+## degree              1.00678661  1.00562108  1.00797485
+## lcc                 0.03799143  0.03245402  0.04443781
+## mean                1.01657427  1.00750807  1.02581463
+## range               0.98577188  0.97747124  0.99414979
+## consec.factorrecur  1.24550485  1.11694638  1.39178571</code></pre>
+<p>Recurrent keywords have an incident rate that is 1.25 times persistent keywords, holding the other variables constant. The number of active years increases by almost 1% for a one unit increase in degree, and it decreases by roughly 96% for a one unit increase in the local clustering coefficient (which is drastic and the maximum possible increase). A one unit increase in the mean of the mean weight corresponds to an almost 2% increase in the incident rate of active years, while a one unit increase in weight range predicts a 1.4% decrease in the incident rate of <code>num.yrs.active</code>.</p>
+<p>The margins package provides a wonderful function (<code>cplot</code>) for visualizing the change in estimates associated with different values of a predictor, holding constant the other predictors.</p>
+<pre class="r"><code>cplot(nb.2, &quot;degree&quot;, 
+      what = &quot;prediction&quot;,
+      main = &quot;Predicted # of active years, given degree&quot;,
+      xlab = &quot;Degree&quot;)</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/unnamed-chunk-9-1.png" width="672" /> In this first graph, one can see that the effect of degree on predicted value increases non-linearly, although the confidence intervals also greatly expand as the density of cases with very high degree is low.</p>
+<pre class="r"><code>cplot(nb.2, &quot;lcc&quot;, 
+      what = &quot;prediction&quot;,
+      main = &quot;Predicted # of active years, given clustering&quot;,
+      xlab = &quot;Clutering coefficient&quot;)</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/unnamed-chunk-10-1.png" width="672" /> Unlike degree, the local clustering coefficient has a non-linear inverse relationship with predicted number of years active.</p>
+<pre class="r"><code>cplot(nb.2, &quot;mean&quot;, 
+      what = &quot;prediction&quot;,
+      main = &quot;Predicted # of active years, given mean weight&quot;,
+      xlab = &quot;Mean weight&quot;)</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/unnamed-chunk-11-1.png" width="672" /> This plot echoes the results in the above tables. There is a very slight positive relationship between the mean of tie weights in a keyword’s ego network, yet the confidence intervals in the right half of the visualization prevents one from knowing whether or not the relationship is non-linear.</p>
+<pre class="r"><code>cplot(nb.2, &quot;range&quot;, 
+      what = &quot;prediction&quot;,
+      main = &quot;Predicted # of active years, given range of weights&quot;,
+      xlab = &quot;Weight range&quot;)</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/unnamed-chunk-12-1.png" width="672" /> Even though the confidence intervals are quite wide here, it is possible to identify a definite non-linear decrease in the relationship between the weight range and the predicted values. This trend</p>
+<pre class="r"><code>cplot(nb.2, &quot;consec.factor&quot;, 
+      what = &quot;prediction&quot;,
+      main = &quot;Predicted # of active years, given usage group&quot;,
+      xlab = &quot;Usage group&quot;)</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/unnamed-chunk-13-1.png" width="672" /> Finally, while the persist category has much wider confidence intervals, it is nonetheless clearly associated with lower estimate.</p>
+<p>Finally, let’s look at a few last graphs. In this first visualization, I graphed the estimates against the observed number of active years for the keywords. For approximately the first (left-most) third of observed values, the predictions slightly overestimate, and, for the remaining observed values, the predictions underestimate <code>num.yrs.active</code>. However, after 23 on the x-axis, many predictions are severe overestimates.</p>
+<pre class="r"><code>keyword.data.reduced &lt;- keyword.data.reduced %&gt;% 
+  mutate(prediction = predict(nb.2, keyword.data.reduced, 
+                               type = &quot;response&quot;)) 
+
+ggplot(keyword.data.reduced, aes(x = num.yrs.active,
+                           y = prediction)) +
+  geom_point() +
+  geom_abline() +
+  ylab(&quot;Prediction&quot;) +
+  xlab(&quot;Observed umber of years active&quot;) +
+  ggtitle(&quot;Predicted values versus observed number of years active&quot;)</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/nb.plot-1.png" width="672" /></p>
+<p>The next two visualizations compare, for the persist and recur usage groups, residuals against the observed and predicted number of years active values.</p>
+<pre class="r"><code>keyword.data.reduced &lt;- keyword.data.reduced %&gt;% 
+  mutate(residual = num.yrs.active - prediction)
+keyword.data.reduced %&gt;% 
+  filter(!is.na(consec.factor)) %&gt;% 
+  ggplot(aes(x = num.yrs.active, 
+             y = residual,
+             color = consec.factor,
+             shape = consec.factor)) +
+    geom_point(show.legend = FALSE) +
+    geom_hline(yintercept = 0) +
+    ylim(-50, 50) +
+  facet_wrap(~ consec.factor, nrow = 1) +
+  xlab(&quot;Number of years active&quot;) +
+  ylab(&quot;Residual&quot;) +
+  ggtitle(&quot;Residual versus observed number of years active by usage group&quot;)</code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/nb.2.resid-1.png" width="672" /> In the first of these two graphs, I have plotted the residuals versus observed values by group. Unfortunately, the seems to be a non-random relationship between the number of years active and the residuals.</p>
+<p>Likewise, in the last graph where I visualize the relationship between the residuals and fitted values, there are obvious non-random relationships in both groups.</p>
+<pre class="r"><code>keyword.data.reduced %&gt;% 
+  filter(!is.na(consec.factor)) %&gt;% 
+  ggplot(aes(x = prediction, 
+             y = residual,
+             color = consec.factor,
+             shape = consec.factor)) +
+    geom_point(show.legend = FALSE) +
+    geom_hline(yintercept = 0) +
+    ylim(-50, 50) +
+    xlim(0, 75) +
+    facet_wrap(~ consec.factor, nrow = 1) +
+    xlab(&quot;Predicted number of years active&quot;) +
+    ylab(&quot;Residual&quot;) +
+    ggtitle(&quot;Residual versus predicted number of years active by usage group&quot;) </code></pre>
+<p><img src="/blog/2018-04-09-keywords-in-bioethics-publications-part-two_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+</div>
+<div id="whats-to-come" class="section level2">
+<h2>What’s to come?</h2>
+<p>The visualizations and regression results in this post uncover interesting results. There are systematic differences between the keyword usage groups, particularly regarding the “lifespans” of these keywords, and the number of years in which keywords are active is associated—at least in part—with how each keyword is linked to the others. The negative binomial models presented here obviously pose problems in their predictive abilities. On the one hand, the incompleteness of the purely relational attributes should not be surprising. I included only four predictors, and other factors, such as attributes of the individuals who employ the categories, are surely at play. On the other hand, there is more to be done in specifying the relationships between the included predictors and <code>num.yrs.active</code>, which will of course be the focus of the next post!</p>
+</div>
+
+                <br>
+		<p class="back-to-posts"><a href="/blog/">Back to posts</a></p>
+            </div>
+            <br>
+            <div class="disqus">
+                <div id="disqus_thread"></div>
+<script>
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "cocoaexamplesite" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+            </div>
+            
+        </div>
+    </div>
+</section>
+
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-117441773-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
+  
+
+  <script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+  </script>
+
+
+
+
+
+</body>
+</html>
+

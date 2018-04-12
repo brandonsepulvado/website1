@@ -1,8 +1,8 @@
 {
-    "path" : "C:/Users/Brandon/Google Drive/website1/content/blog",
+    "path" : "C:/Users/Brandon/Google Drive/website1/themes/cocoa-hugo-theme/exampleSite",
     "sortOrder" : [
         {
-            "ascending" : true,
+            "ascending" : false,
             "columnIndex" : 2
         }
     ]

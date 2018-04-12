@@ -11,7 +11,7 @@ I ended the last post by highlighting differences in keywords of publications re
 
 ## Visualizations
 
-Before employing statistical models, it would be prudent to examine visually the data. Here are the visualizations with which at ended the previous blog post. 
+Before employing statistical models, it would be prudent to examine visually the data. Here are the visualizations with which I ended the previous blog post. 
 
 ```{r creating.data, include=FALSE}
 library(tidytext)
