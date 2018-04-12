@@ -2,41 +2,41 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Blog on Brandon Sepulvado</title>
-    <link>/www.brandonsepulvado.com/blog/</link>
+    <link>/brandonsepulvado.com/blog/</link>
     <description>Recent content in Blog on Brandon Sepulvado</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
     <lastBuildDate>Sat, 22 Aug 2015 06:42:21 -0700</lastBuildDate>
     
-	<atom:link href="/www.brandonsepulvado.com/blog/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/brandonsepulvado.com/blog/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Bioethics keywords: part two, lifespan</title>
-      <link>/www.brandonsepulvado.com/about/bioethics-keywords-part-two-lifespan/</link>
+      <link>/brandonsepulvado.com/about/bioethics-keywords-part-two-lifespan/</link>
       <pubDate>Tue, 10 Apr 2018 00:00:00 +0000</pubDate>
       
-      <guid>/www.brandonsepulvado.com/about/bioethics-keywords-part-two-lifespan/</guid>
+      <guid>/brandonsepulvado.com/about/bioethics-keywords-part-two-lifespan/</guid>
       <description>I ended the last post by highlighting differences in keywords of publications related to bioethics on the Web of Science that were used in consecutive years, in multiple but non-consectuive years, and in only a single year. In this post, I will predict the number of years in which a keyword is used to categorize journal articles.
 VisualizationsBefore employing statistical models, it would be prudent to examine visually the data.</description>
     </item>
     
     <item>
       <title>Bioethics keywords: part one</title>
-      <link>/www.brandonsepulvado.com/about/bioethics-keywords-part-one/</link>
+      <link>/brandonsepulvado.com/about/bioethics-keywords-part-one/</link>
       <pubDate>Thu, 05 Apr 2018 00:00:00 +0000</pubDate>
       
-      <guid>/www.brandonsepulvado.com/about/bioethics-keywords-part-one/</guid>
+      <guid>/brandonsepulvado.com/about/bioethics-keywords-part-one/</guid>
       <description>In my first post, I am going to begin what will most likely be a three-part series on the evolution of bioethics publications over the last several decades. This post is mostly about getting the data in order and exploring what the amazing tidytext package has to offer.
 Bioethics has emerged over the last several decades from several branches of ethics (e.g., medical and religious) to form a domain with its own set of conceptual and institutional structures.</description>
     </item>
     
     <item>
       <title>Hello world!</title>
-      <link>/www.brandonsepulvado.com/about/hello-world/</link>
+      <link>/brandonsepulvado.com/about/hello-world/</link>
       <pubDate>Sun, 01 Apr 2018 00:00:00 +0000</pubDate>
       
-      <guid>/www.brandonsepulvado.com/about/hello-world/</guid>
+      <guid>/brandonsepulvado.com/about/hello-world/</guid>
       <description>Welcome to my new website and blog! I am in the process of migrating most of the content from my previous website; this site is built using the blogdown R package along with the Cocoa Hugo theme.
 The blog content will vary widely between posts related to research in progress, those that I write because I enjoy the substantive content, and those I write in order to learn a new tool or package.</description>
     </item>
