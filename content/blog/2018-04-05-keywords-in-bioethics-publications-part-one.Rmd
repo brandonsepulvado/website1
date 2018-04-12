@@ -1,8 +1,8 @@
 ---
-title: 'Keywords in bioethics publications: part one'
+title: 'Bioethics keywords: part one'
 author: ''
 date: '2018-04-05'
-slug: keywords-in-bioethics-publications-part-one
+slug: bioethics-keywords-part-one
 #categories:
 #  - R
 #tags:

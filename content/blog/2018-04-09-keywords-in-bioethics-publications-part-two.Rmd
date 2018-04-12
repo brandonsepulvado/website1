@@ -1,0 +1,620 @@
+---
+title: 'Bioethics keywords: part two, lifespan'
+author: ''
+date: '2018-04-10'
+slug: bioethics-keywords-part-two-lifespan
+categories: []
+tags: []
+---
+
+I ended the last post by highlighting differences in keywords of publications related to bioethics on the Web of Science that were used in consecutive years, in multiple but non-consectuive years, and in only a single year. In this post, I will predict the number of years in which a keyword is used to categorize journal articles. 
+
+## Visualizations
+
+Before employing statistical models, it would be prudent to examine visually the data. Here are the visualizations with which at ended the previous blog post. 
+
+```{r creating.data, include=FALSE}
+library(tidytext)
+library(readxl)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(tidyr)
+library(igraph)
+library(tidygraph)  
+library(texreg)
+library(margins)
+
+ranges <- c("1-499", "500-999", "1000-1499", "1500-1999", "2000-2499", "2500-2999", "3000-3499", "3500-3999", "4000-4499", "4500-4999", "5000-5499", "5500-5999", "6000-6499", "6500-6999", "7000-7499", "7500-7999", "8000-8150")
+
+files <- vector(mode = "character", length = length(ranges))
+
+for (i in 1:17) {
+  files[i] <- str_c("C:/Users/Brandon/Google Drive/Papers/bioethics networks/","bioeth", ranges[i], ".xlsx")
+
+}
+
+bioeth.data <- vector(mode = "list", length = length(files))
+for (i in 1:length(files)) {
+  bioeth.data[[i]] <- read_excel(files[i])
+}
+
+  
+for (i in 1:length(bioeth.data)) {
+  bioeth.data[[i]] <- select(bioeth.data[[i]], PT, AU, 
+                             AF, TI, SO, DT, DE, ID, AB, 
+                             C1, CR, TC, Z9, PU, PD, PY,
+                             DI, D2, WC, SC)
+}
+
+data.bioeth <- bind_rows(bioeth.data)
+
+data.bioeth <- rename(data.bioeth, 
+                      pub.type = PT,
+                      authors = AU,
+                      author.full = AF,
+                      doc.title = TI,
+                      pub.name = SO,
+                      doc.type = DT,
+                      author.keywords = DE,
+                      keywords.plus = ID,
+                      abstract = AB,
+                      author.address = C1,
+                      cited.refs = CR,
+                      wos.core.citedcount = TC,
+                      total.cited.count = Z9,
+                      publisher = PU,
+                      pub.date = PD,
+                      year.pub = PY,
+                      doi = DI,
+                      book.doi = D2,
+                      wos.categs = WC,
+                      research.areas = SC)
+
+
+data.bioeth.1 <- data.bioeth %>% 
+  mutate(article.id = seq(from = 1, to = nrow(data.bioeth), by = 1))
+
+data("stop_words")
+unnest.akw <- data.bioeth.1 %>%
+  filter(!is.na(author.keywords)) %>%
+  unnest_tokens(akw, author.keywords) %>%
+  anti_join(stop_words, by = c("akw" = "word")) 
+
+akw.art.final <- data.bioeth.1 %>%
+  filter(!is.na(author.keywords)) %>%
+  unnest_tokens(akw, author.keywords) %>%
+  anti_join(stop_words, 
+            by = c("akw" = "word")) %>%
+  filter(akw != "bioethics" &
+           akw != "ethics") %>%
+  filter(!str_detect(akw, "\\d"))
+
+akw.j.noyears.final <- akw.art.final %>%
+  filter(pub.type=="J") %>%
+  select(akw, pub.name) %>%
+  rename(keyword = akw, journal = pub.name) %>%
+  count(keyword, journal, sort = TRUE)
+
+akw.j.years.final <- akw.art.final %>%
+  filter(pub.type=="J") %>%
+  select(akw, pub.name, year.pub) %>%
+  rename(keyword = akw, 
+         journal = pub.name, 
+         year = year.pub) %>%
+  count(keyword, journal, year, sort = TRUE)
+
+total.words <- akw.j.noyears.final %>% 
+  group_by(journal) %>% 
+  summarize(total = sum(n))
+
+journal.words <- left_join(akw.j.noyears.final,
+                           total.words)
+
+journal.words <- journal.words %>%
+  bind_tf_idf(keyword, journal, n)
+
+years <- seq(from = 1990, to = 2018, by = 1)
+years <- as.character(years)
+journal.words.years <- vector("list", length(years))
+total.words.years <- vector("list", length(years))
+akw.j.years.loop <- vector("list", length(years))
+
+for (i in 1:length(journal.words.years)) {
+  total.words.years[[i]] <- akw.j.years.final %>%
+    filter(year == years[i]) %>%
+    group_by(journal) %>%
+    summarise(total = sum(n))
+  
+  akw.j.years.loop[[i]] <- akw.j.years.final %>%
+    filter(year == years[i])
+
+  journal.words.years[[i]] <- left_join(akw.j.years.loop[[i]],
+                                        total.words.years[[i]])
+
+  journal.words.years[[i]] <- journal.words.years[[i]] %>%
+    bind_tf_idf(keyword, journal, n)
+}
+
+# create a tbl
+test.bind <- bind_rows(journal.words.years)
+
+keyword.evo <- test.bind %>%
+  select(keyword) %>%
+  unique() 
+  
+# create variable
+keyword.evo$num.yrs.active <- NA
+
+# fill-in variable
+for (i in 1:nrow(keyword.evo)) {
+  keyword.evo$num.yrs.active[i] <- test.bind %>%
+    filter(keyword == keyword.evo$keyword[i]) %>%
+    summarise(n_distinct(year)) %>%
+    as.numeric()
+}
+
+keyword.evo$consec <- NA
+for (i in 1:nrow(keyword.evo)) {
+  year.temp <- test.bind %>%
+    filter(keyword == keyword.evo$keyword[i]) %>%
+    distinct(year) %>%
+    as.matrix() %>%
+    diff() 
+
+  if (length(year.temp) >= 1) {
+    keyword.evo$consec[i] <- all(year.temp == 1)
+  } else {
+    keyword.evo$consec[i] <- NA
+  } 
+  
+}
+```
+
+```{r year.distrib.consec, message=FALSE, warning=FALSE, include=FALSE}
+keyword.evo.consec.true <- keyword.evo %>%
+  filter(consec == TRUE)
+consec.true <- test.bind %>%
+  filter(keyword  %in% keyword.evo.consec.true$keyword) %>%
+  select(-n) %>%
+  count(year, sort = TRUE) %>%
+  filter(year != 2018) %>%
+  mutate(consec = TRUE)
+
+keyword.evo.consec.false <- keyword.evo %>%
+  filter(consec == FALSE)
+consec.false <- test.bind %>%
+  filter(keyword  %in% keyword.evo.consec.false$keyword) %>%
+  select(-n) %>%
+  count(year, sort = TRUE) %>%
+  filter(year != 2018) %>%
+  mutate(consec = FALSE)
+
+keyword.evo.consec.na <- keyword.evo %>%
+  filter(is.na(consec))
+consec.na <- test.bind %>%
+  filter(keyword  %in% keyword.evo.consec.na$keyword) %>%
+  select(-n) %>%
+  count(year, sort = TRUE) %>%
+  filter(year != 2018) %>%
+  mutate(consec = NA)
+
+consec.evo <- bind_rows(consec.true, consec.false,
+                                consec.na)
+```
+
+```{r}
+consec.evo <- consec.evo %>% 
+  mutate(usage.type = case_when(
+    consec == TRUE ~ "Persist",
+    consec == FALSE ~ "Recur",
+    is.na(consec) ~ "Single"
+  ))
+
+consec.evo %>%
+  ggplot(aes(x = year, y = n, color = usage.type)) +
+  geom_line() +
+  xlab("Year") +
+  ylab("Keyword count") +
+  ggtitle("Trends in keyword usage by usage type") 
+
+```
+For this visualization, I renamed the `consec` variable and its levels to `usage.type` and persist, recur, and single. Persist indicates that a keyword has been used in multiple, consecutive years, and recur indicates that a keyword has been used in multiple, non-consecutive years. Single refers to keywords that have been employed in only one year. Over this roughly 27 year period, recurrent keywords categorize articles the most frequently and at an increasing rate. Persistent and single-use keywords occur at roughly the same rate, although there is a marked difference starting around 2013. 
+
+
+Now, let's examine visually the distributions of the number of years for the persist and recur usage types.
+```{r}
+keyword.evo %>%
+  filter(!is.na(consec)) %>% # NA = one year
+  ggplot(aes(num.yrs.active, color = consec, fill = consec)) +
+  geom_density(alpha = .5) +
+  scale_fill_discrete(name='Usage group',labels=c("Recur", "Persist"))+
+  scale_color_discrete(name='Usage group',labels=c("Recur", "Persist")) +
+  xlab("Number of years a keyword is active") +
+  ylab("Density") +
+  ggtitle("Distribution of years active by whether consecutive") +
+  theme_minimal() 
+```
+The two distributions appear to differ greatly. Recur has more density spread farthest along the x axis, but persist has the highest maximum value. These two groups clearly exhibit distinct behaviors. 
+
+The models below will investigate these group differences in the number of years during which a keyword is active, but I first want to examine in further detail the patterns of usage among keywords that are employed during multiple years. The next chunk of code creates a new object called `year.diffs`. To do so, I isolate the distinct years in which each unique keyword is used, take the difference between adjacent years in the vector (assigned to a variable called `diffs`), and then note the position of each difference in the vector of differences (assigned to a variable called `position`). I also include a `keyword` variable to identify to which keyword the differences and positions refer. Each row is uniquely identified by `keyword` plus `position`, as `diffs` might have multiple equivalent values for a given keyword. 
+```{r message=FALSE, warning=FALSE}
+year.diffs <- vector("list", length = nrow(test.bind))
+for (i in 1:length(year.diffs)) {
+  year.diffs[[i]] <- test.bind %>%
+    filter(keyword == keyword.evo$keyword[i]) %>%
+    distinct(year) %>%
+    as.matrix() %>%
+    diff() %>%
+    as.data.frame() %>%
+    mutate(keyword = keyword.evo$keyword[i])
+}
+year.diffs <- bind_rows(year.diffs)
+year.diffs <- year.diffs %>%
+  select(-.) %>%
+  rename(diffs = year) %>%
+  group_by(keyword) %>%
+  mutate(position = 1:n()) 
+year.diffs <- year.diffs %>%
+  ungroup()
+
+head(year.diffs)
+```
+The `head()` function at the end of this code provides an idea about the organization of `year.diffs`. For example, one can see that healing appears three times in this object, which means that it originally was used during four years. There was a gap of 19 years between its first and second years used, 2 yeas between its second and third years used, and 5 between its third and fourth years used. 
+
+Given the large number of keywords that appear in multiple years with at least one non-consecutive jump, let's check out the histogram of the maximum non-consecutive differences. The x-axis will begin at 2 because that is the smallest non-consecutive difference.
+```{r message=FALSE, warning=FALSE}
+year.diffs %>%
+  filter(diffs > 1) %>% 
+  group_by(keyword) %>%
+  summarise(diffs.max = max(diffs)) %>%
+  ggplot(aes(diffs.max)) +
+  geom_histogram() +
+  ggtitle("Density plot of max non-consecutive year differences") +
+  xlim(2, 30) +
+  xlab("Maximum non-consecutive difference in years used") +
+  ylab("Number of occurrences")
+```
+
+
+Now, I want to know, for each non-consecutive sequence, how many times are there non-consecutive years?
+```{r num.nonsec}
+year.diffs %>%
+  group_by(keyword) %>%
+  filter(diffs > 1) %>%
+  summarise(num = n()) %>%
+  summarise(n_distinct(num)) # 9 distinct values
+
+year.diffs %>%
+  group_by(keyword) %>%
+  filter(diffs > 1) %>%
+  summarise(num = n()) %>%
+  ggplot(aes(as.factor(num))) +
+    geom_bar(show.legend = FALSE) +
+    xlab("Number of non-consecutive usages") +
+    ylab("Count") +
+    ggtitle("Frequency of unique values of non-consecutive uses")
+    
+```
+This bar graph suggests that the plurality of nonconsecutively used keywords have only one nonconsecutive break, yet there is a considerable portion of other cases have multiple nonconsecutive breaks.
+
+I also want to know when different sized breaks in continuity occur; the following graph will plot the difference position against the difference magnitude.
+```{r}
+ggplot(year.diffs, aes(position, diffs)) +
+  geom_jitter(aes(color = as.factor(position)), show.legend = FALSE) +
+  xlab("Position") +
+  ylab("Difference") +
+  ggtitle("Plot of differences by position") +
+  theme_minimal()
+```
+This jitter plot presents interesting results. Similar to a boxplot, this graphic allows one to see the density of inter-year differences for each position. The minimum position is one (because a keyword must be used at least twice to have a difference).
+
+This is a boxplot of the same data.
+```{r}
+year.diffs %>%
+  ggplot(aes(position, diffs)) +
+  geom_boxplot(aes(group = as.factor(position)))
+```
+This boxplot does not look as nice as the jitter plot. More importantly, while it does indicate outliers, much of the information is incomprehensible due to the tight clustering of cases near zero.
+
+
+## Model estimation
+
+Before I get to the model estimation, it is necessary to provide an overview of my analytic strategy. The basic unit in the models will be the keyword, which means the predictors will need to be attributes about the keyword, but what attributes---aside from the number of active years and usage group---are present in the data? Without getting into too much theoretical justification (this will be in the forthcoming paper), I am interested in how relational attributes of keywords qua product categories in the academic/scientific market influence their lifecycle. 
+
+One may derive networks among the keywords because each keyword occurence is associated with a unique journal article. Two approaches to arriving at this network present themselves. First, one may create a bipartite network in which keywords are connected to journal articles; second, one may employ the tidytext package to create bigrams from the author keyword cell. These approaches ultimately can result in the same data structure, and I will use both in this series on bioethics keywords. Two keywords will be connected if they were used to describe the same journal article, and the weight of their relationship will correspond to the number of papers in which they co-occured. 
+
+What are the attributes in which I am interested? The first two are degree and the local clustering coefficient: that is, the number of keywords to which each keyword is connected and how densely each of the keywords to which a focal keyword is connected are linked among themselves. Degree and clustering would seem to be positively related to the number of years in which a keyword is employed. If a keyword is related to many others, then it might be used more, which would increase the likelihood of its extended temporal distribution, and, if the keyword is a member of a densely connected group of keywords, then they might form a subspeciality associated with an active community of scholars. The remaining attributes pertain to the distribution of weights within the [ego network](http://faculty.ucr.edu/~hanneman/nettext/C9_Ego_networks.html) (the set of relationships in which a focal keyword is involved) of each keyword. 
+
+```{r get.data, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+### create focal.attribs.1
+akw.bigrams.noyears <- data.bioeth.1 %>%
+  filter(!is.na(author.keywords)) %>%
+  filter(!str_detect(author.keywords, "\\d")) %>%
+  group_by(year.pub) %>%
+  unnest_tokens(akw.bi, 
+                author.keywords, 
+                token = "ngrams", 
+                n = 2) %>%
+  separate(akw.bi, 
+           c("word1", "word2"), 
+           sep = " ") %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word) %>%
+  filter(word1 != "bioethics" 
+         & word1 != "ethics") %>%
+  filter(word2 != "bioethics" 
+         & word2 != "ethics") %>%
+  ungroup()
+akw.bigrams.noyears <- akw.bigrams.noyears %>%
+  filter(!duplicated(akw.bigrams.noyears))
+# from conceptual structure networks
+bigram.counts.noyears <- akw.bigrams.noyears %>%
+  add_count(word1, word2)
+# from relational analyses
+data("stop_words")
+unique.akw <- data.bioeth.1 %>%
+  filter(!is.na(author.keywords)) %>%
+  unnest_tokens(akw, author.keywords) %>%
+  anti_join(stop_words, by = c("akw" = "word")) %>%
+  filter(akw != "bioethics" & akw != "ethics") %>%
+  count(akw, sort = TRUE)
+unique.akw.nonum <- grepl("\\d", unique.akw$akw)
+unique.akw.final <- unique.akw %>%
+  filter(unique.akw.nonum==FALSE)
+# from conceptual structure networks
+focal.attribs1 <- vector("list", length = nrow(unique.akw.final)) 
+# length is number of variables about keyword
+for (i in 1:length(focal.attribs1)) {
+  if (unique.akw.final$akw[i] %in% bigram.counts.noyears$word1){
+    focal.attribs1[[i]] <- bigram.counts.noyears %>% 
+      filter(word1 == unique.akw.final$akw[i]) %>% 
+      summarise(word = unique.akw.final$akw[i],
+                sd=sd(n), 
+                min=min(n), 
+                max=max(n), 
+                mean=mean(n), 
+                range=max(n)-min(n), 
+                iqr = stats::IQR(n),
+                degree=n()) 
+  } else if (!unique.akw.final$akw[i] %in% bigram.counts.noyears$word1 &
+             unique.akw.final$akw[i] %in% bigram.counts.noyears$word2) {
+    focal.attribs1[[i]] <- bigram.counts.noyears %>% 
+      filter(word2 == unique.akw.final$akw[i]) %>% 
+      summarise(word = unique.akw.final$akw[i],
+                sd=sd(n), 
+                min=min(n), 
+                max=max(n), 
+                mean=mean(n), 
+                range=max(n)-min(n), 
+                iqr = stats::IQR(n),
+                degree=n()) 
+  }
+}
+focal.attribs1 <- bind_rows(focal.attribs1)
+
+### create keyword.projection.lcc
+akw.art <- akw.art.final %>%
+  select(akw, article.id) %>%
+  as.data.frame()
+igraph.noyears <- graph_from_data_frame(akw.art, directed = FALSE)
+V(igraph.noyears)$type <- V(igraph.noyears)$name %in% akw.art[,2] 
+# the second column of edges is TRUE type
+tidygraph.noyears <- as_tbl_graph(igraph.noyears)
+# from relational analyses
+keyword.projection <- bipartite.projection(tidygraph.noyears,
+                                           which = "false")
+# from relational analyses
+keyword.projection.lcc <- transitivity(keyword.projection,
+                                       type = c("barrat"))
+keyword.projection.lcc <- as_tibble(keyword.projection.lcc) %>%
+  mutate(keyword = V(keyword.projection)$name)
+
+### combine
+keyword.data.0 <- left_join(focal.attribs1,
+                            keyword.projection.lcc,
+                            by = c("word" = "keyword"))
+keyword.data.0 <- keyword.data.0 %>%
+  rename(lcc = value)
+keyword.evo$consec[keyword.evo$consec==TRUE] <- "persist"
+keyword.evo$consec[keyword.evo$consec==FALSE] <- "recur"
+keyword.evo$consec[is.na(keyword.evo$consec)] <- "single"
+
+keyword.data.0 <- left_join(keyword.data.0, keyword.evo,
+                            by = c("word" = "keyword"))
+```
+
+
+The first things I will do is to determine which type of count model is best to estimate given the data; I here adjudicate between the two main contenders: Poisson and negative binomial regression models. For a good introduction to choosing between these two model types, check out [UCLA's Institute for Digital Research and Education](https://stats.idre.ucla.edu/r/dae/negative-binomial-regression/). 
+
+Before I go any further, I want to remove keywords in the "single" usage group because it perfectly predicts a `num.yrs.active` value of one. I also create a new variable, which is simply a factor version of `consec`.
+```{r}
+keyword.data.0 <- keyword.data.0 %>% 
+  mutate(consec.factor = as.factor(consec))
+
+keyword.data.reduced <- keyword.data.0 %>% 
+  filter(consec.factor != "single")
+```
+
+
+The following summary indcates the variance is greater than the mean, which suggests that a negative bionomial model is more appropriate. 
+```{r var.mean}
+keyword.data.reduced %>% 
+  filter(!is.na(num.yrs.active)) %>% 
+  summarise(var(num.yrs.active), mean(num.yrs.active))
+```
+However, we can explicitly test this by running both types of model and then using a likelihood ratio test for a comparison. I present the comparison between two base models containing only degree and local clustering coefficient, but the sustantive takeaway remains unchanged with the later models.
+```{r num.yrs.active.analyses}
+# negative binomial model
+# MASS masks select from dplyr and tidygraph
+nb.0 <- MASS::glm.nb(num.yrs.active ~ degree + lcc,
+                             data = keyword.data.reduced,
+                     control=glm.control(maxit=50))
+# poisson model
+pois.0 <- glm(num.yrs.active ~ degree + lcc, 
+              family = "poisson",
+              data = keyword.data.reduced)
+
+screenreg(list(pois.0, nb.0),
+          custom.model.names = c("Poisson", "Negative Binomial"))
+
+# which is preferable
+chi2 <- 2 * (logLik(nb.0) - logLik(pois.0))
+pchi2 <- pchisq(2 * (logLik(nb.0) - logLik(pois.0)), df = 1, lower.tail = FALSE)
+print(paste0("Chi-squared value ", chi2))
+print(paste0("P-value for chi-squared ", pchi2))
+```
+As shown in the table, the log counts produced by the two models are pretty similar, with the local clustering coefficient having the largest discrepancy. The likelihood ratio test and its corresponding p-value indicate that the negative binomial model is preferable. I will employ negative binomial regression for the following models. 
+
+The next two models add attributes about tie weights (i.e., mean and range) as well as the `consec` category.
+```{r nb.1}
+nb.1 <- MASS::glm.nb(num.yrs.active ~ degree + lcc + mean + range,
+                     data = keyword.data.reduced,
+                     control=glm.control(maxit=100))
+
+nb.2 <- MASS::glm.nb(num.yrs.active ~ degree + lcc  + mean + range +
+                       consec.factor,
+                     data = keyword.data.reduced,
+                     control=glm.control(maxit=100),
+                     na.action = na.exclude)
+
+screenreg(list(nb.0, nb.1, nb.2),
+          custom.coef.names = c("Intercept",
+                              "Degree",
+                              "Clustering",
+                              "Mean (ego weight)",
+                              "Range (ego weight)",
+                              "Recur"))
+```
+The predictors added in Models 2 and 3 are significant at the p < .001 level, and the indicators at the bottom of the table suggest that there is a general immprovement. However, let's run some tests to have further certainty. 
+
+```{r model.diagnostics.1}
+nb.1.update <- update(nb.1, . ~ . - mean - range)
+## test model differences with chi square test
+anova(nb.1, nb.1.update) # two degree-of-freedom chi-square test
+```
+This two degree-of-freedom chi-squared test indicates that Model 2 is preferable to Model 1. How does Model 2 compare to Model 3?
+```{r model.diagnostics.2}
+nb.2.update <- update(nb.2, . ~ . - consec.factor)
+anova(nb.2, nb.2.update)
+```
+These results confirm the intuition from the table: Model 3 is the most preferable model. 
+
+Before interpreting Model 3, I will display again the results, and I will also include a coefficient plot from the `texreg` package. A one unit increase in degree (i.e., a keyword having one extra connection to another keyword) corresponds to a miniscule .00676 increase in the log number of active years, and a one unit increase in the local clustering coefficient predicts a 3.27 decrease in a keyword's log number of active years. The two attributes concerning the weights of ties in which a keyword is involved exhibit opposite effects. A one unit increase in the mean tie weight corresponds to a .0164 increase in the log number of active years, while, for a one unit increase in the range of a keyword's ego network tie weights, the expected log number of active years decreases by .0143. Compared to keywords that appear in consecutive years ("persist"), non-consecutive words have a log number of active years that is higher by .220.
+
+```{r nb.2.interp}
+summary(nb.2)
+plotreg(nb.2)
+```
+
+Let's also look at the results as incidence rates.
+```{r message=FALSE, warning=FALSE}
+est <- cbind(Estimate = coef(nb.2), confint(nb.2))
+exp(est)
+```
+Recurrent keywords have an incident rate that is 1.25 times persistent keywords, holding the other variables constant. The number of active years increases by almost 1% for a one unit increase in degree, and it decreases by roughly 96% for a one unit increase in the local clustering coefficient (which is drastic and the maximum possible increase). A one unit increase in the mean of the mean weight corresponds to an almost 2% increase in the incident rate of active years, while a one unit increase in weight range predicts a 1.4% decrease in the incident rate of `num.yrs.active`.
+
+The margins package provides a wonderful function (`cplot`) for visualizing the change in estimates associated with different values of a predictor, holding constant the other predictors. 
+```{r}
+cplot(nb.2, "degree", 
+      what = "prediction",
+      main = "Predicted # of active years, given degree",
+      xlab = "Degree")
+```
+In this first graph, one can see that the effect of degree on predicted value increases non-linearly, although the confidence intervals also greatly expand as the density of cases with very high degree is low.
+
+```{r}
+cplot(nb.2, "lcc", 
+      what = "prediction",
+      main = "Predicted # of active years, given clustering",
+      xlab = "Clutering coefficient")
+```
+Unlike degree, the local clustering coefficient has a non-linear inverse relationship with predicted number of years active.
+
+```{r}
+cplot(nb.2, "mean", 
+      what = "prediction",
+      main = "Predicted # of active years, given mean weight",
+      xlab = "Mean weight")
+```
+This plot echoes the results in the above tables. There is a very slight positive relationship between the mean of tie weights in a keyword's ego network, yet the confidence intervals in the right half of the visualization prevents one from knowing whether or not the relationship is non-linear.
+
+
+```{r}
+cplot(nb.2, "range", 
+      what = "prediction",
+      main = "Predicted # of active years, given range of weights",
+      xlab = "Weight range")
+
+```
+Even though the confidence intervals are quite wide here, it is possible to identify a definite non-linear decrease in the relationship between the weight range and the predicted values. This trend 
+
+```{r}
+cplot(nb.2, "consec.factor", 
+      what = "prediction",
+      main = "Predicted # of active years, given usage group",
+      xlab = "Usage group")
+```
+Finally, while the persist category has much wider confidence intervals, it is nonetheless clearly associated with lower estimate. 
+
+
+Finally, let's look at a few last graphs. In this first visualization, I graphed the estimates against the observed number of active years for the keywords. For approximately the first (left-most) third of observed values, the predictions slightly overestimate, and, for the remaining observed values, the predictions underestimate `num.yrs.active`. However, after 23 on the x-axis, many predictions are severe overestimates.
+
+```{r nb.plot, message=FALSE, warning=FALSE}
+keyword.data.reduced <- keyword.data.reduced %>% 
+  mutate(prediction = predict(nb.2, keyword.data.reduced, 
+                               type = "response")) 
+
+ggplot(keyword.data.reduced, aes(x = num.yrs.active,
+                           y = prediction)) +
+  geom_point() +
+  geom_abline() +
+  ylab("Prediction") +
+  xlab("Observed umber of years active") +
+  ggtitle("Predicted values versus observed number of years active")
+```
+
+The next two visualizations compare, for the persist and recur usage groups, residuals against the observed and predicted number of years active values. 
+```{r nb.2.resid, message=FALSE, warning=FALSE}
+keyword.data.reduced <- keyword.data.reduced %>% 
+  mutate(residual = num.yrs.active - prediction)
+keyword.data.reduced %>% 
+  filter(!is.na(consec.factor)) %>% 
+  ggplot(aes(x = num.yrs.active, 
+             y = residual,
+             color = consec.factor,
+             shape = consec.factor)) +
+    geom_point(show.legend = FALSE) +
+    geom_hline(yintercept = 0) +
+    ylim(-50, 50) +
+  facet_wrap(~ consec.factor, nrow = 1) +
+  xlab("Number of years active") +
+  ylab("Residual") +
+  ggtitle("Residual versus observed number of years active by usage group")
+```
+In the first of these two graphs, I have plotted the residuals versus observed values by group. Unfortunately, the seems to be a non-random relationship between the number of years active and the residuals.
+
+Likewise, in the last graph where I visualize the relationship between the residuals and fitted values, there are obvious non-random relationships in both groups. 
+
+```{r message=FALSE, warning=FALSE}
+keyword.data.reduced %>% 
+  filter(!is.na(consec.factor)) %>% 
+  ggplot(aes(x = prediction, 
+             y = residual,
+             color = consec.factor,
+             shape = consec.factor)) +
+    geom_point(show.legend = FALSE) +
+    geom_hline(yintercept = 0) +
+    ylim(-50, 50) +
+    xlim(0, 75) +
+    facet_wrap(~ consec.factor, nrow = 1) +
+    xlab("Predicted number of years active") +
+    ylab("Residual") +
+    ggtitle("Residual versus predicted number of years active by usage group") 
+```
+
+## What's to come?
+The visualizations and regression results in this post uncover interesting results. There are systematic differences between the keyword usage groups, particularly regarding the "lifespans" of these keywords, and the number of years in which keywords are active is associated---at least in part---with how each keyword is linked to the others. The negative binomial models presented here obviously pose problems in their predictive abilities. On the one hand, the incompleteness of the purely relational attributes should not be surprising. I included only four predictors, and other factors, such as attributes of the individuals who employ the categories, are surely at play. On the other hand, there is more to be done in specifying the relationships between the included predictors and `num.yrs.active`, which will of course be the focus of the next post!
+
+
+
