@@ -9,6 +9,6 @@ tags: []
  
  Welcome to my new website and blog! I am in the process of migrating most of the content from my previous website; this site is built using the [`blogdown`](https://bookdown.org/yihui/blogdown/) R package along with the [Cocoa Hugo theme](https://github.com/nishanths/cocoa-hugo-theme).
  
- The blog content will vary widely between posts related to research in progress, those that I write because I enjoy the substantive content, and those I write in order to learn a new tool or package. I might even post functions I write about which I am particularly excited.
+ The blog content will vary widely between posts related to research in progress, those that I write because I enjoy the substantive content, and those I write in order to learn a new tool or package. I might even post functions about which I am particularly excited.
  
  Any feedback is very much welcome. Whether you have questions about my code or want to provide suggestions on how to improve my code, please get in touch.
