@@ -6,10 +6,19 @@
     <description>Recent content on Brandon Sepulvado</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Mon, 09 Apr 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 27 Sep 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Conceptual Structure: Community Detection Versus Topic Models</title>
+      <link>/blog/conceptual-structure-community-detection-versus-topic-models/</link>
+      <pubDate>Thu, 27 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/conceptual-structure-community-detection-versus-topic-models/</guid>
+      <description>Corpus Topical Structure: Network Analysis and Topic Modeling In this post, I will be reviewing two principal ways to uncover the topical structure of texts: community detection algorithms on networks of words and topic models. The data I use come from the Web of Science. I have records for all articles containing “bioethic” in their titles, abstracts, or keywords, and the time period ranges from 1900-(Jan.)2018. There are roughly 8,500 articles in this data set (I am happy to provide a much more detailed description upon request).</description>
+    </item>
     
     <item>
       <title>Bioethics keywords: part two, lifespan</title>

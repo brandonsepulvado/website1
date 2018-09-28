@@ -1,0 +1,1135 @@
+---
+title: 'Conceptual Structure: Community Detection Versus Topic Models'
+author: Brandon Sepulvado
+date: '2018-09-27'
+slug: conceptual-structure-community-detection-versus-topic-models
+categories: []
+tags: []
+---
+
+
+# Corpus Topical Structure: Network Analysis and Topic Modeling
+
+In this post, I will be reviewing two principal ways to uncover the topical structure of texts: community detection algorithms on networks of words and topic models. The data I use come from the Web of Science. I have records for all articles containing "bioethic" in their titles, abstracts, or keywords, and the time period ranges from 1900-(Jan.)2018. There are roughly 8,500 articles in this data set (I am happy to provide a much more detailed description upon request). 
+
+```{r load_packages, message=FALSE, warning=FALSE}
+library(tidytext)
+library(readxl)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(tidyr)
+library(igraph)
+library(reshape2)
+library(tidygraph)
+library(stm)
+```
+
+
+```{r create_data, message=FALSE, warning=FALSE, include=FALSE}
+# set working directory (mac laptop)
+setwd("/Users/brandonsepulvado/Documents/bioethics-networks")
+
+
+
+###
+### import files
+###
+
+# create vector with numbers for file names
+ranges <- c("1-499", "500-999", "1000-1499", "1500-1999", "2000-2499", "2500-2999", "3000-3499", "3500-3999", "4000-4499", "4500-4999", "5000-5499", "5500-5999", "6000-6499", "6500-6999", "7000-7499", "7500-7999", "8000-8150")
+
+# create a vector for file names
+files <- vector(mode = "character", length = length(ranges))
+
+# populate files vector
+for (i in 1:17) {
+  files[i] <- str_c("bioeth", ranges[i], ".xlsx")
+}
+
+# create list into which files will be imported
+bioeth.data <- vector("list", length(files))
+
+# populate import list
+for (j in 1:length(files)) {
+  bioeth.data[[j]] <- read_excel(files[j])
+}
+
+# keep only desired variables/columns in each list element
+for (i in 1:length(bioeth.data)) {
+  bioeth.data[[i]] <- select(bioeth.data[[i]], PT, AU, AF, TI, SO, DT, DE, ID, AB, C1, CR, TC, Z9, PU, PD, PY,   DI, D2, WC, SC)
+}
+
+# convert list to data frame
+data.bioeth <- bind_rows(bioeth.data)
+
+
+# rename variables with intuitive names
+data.bioeth <- rename(data.bioeth, 
+                      pub.type = PT,
+                      authors = AU,
+                      author.full = AF,
+                      doc.title = TI,
+                      pub.name = SO,
+                      doc.type = DT,
+                      author.keywords = DE,
+                      keywords.plus = ID,
+                      abstract = AB,
+                      author.address = C1,
+                      cited.refs = CR,
+                      wos.core.citedcount = TC,
+                      total.cited.count = Z9,
+                      publisher = PU,
+                      pub.date = PD,
+                      year.pub = PY,
+                      doi = DI,
+                      book.doi = D2,
+                      wos.categs = WC,
+                      research.areas = SC)
+
+# remove all but last object
+rm(ranges, files, bioeth.data)
+
+
+
+###
+### bioethics keywords analyses1
+###
+
+# create unique article identifier
+data.bioeth.1 <- data.bioeth %>% 
+  mutate(article.id = seq(from = 1, to = nrow(data.bioeth), by = 1))
+
+# unnest keywords (row will be keyword + article id)
+data("stop_words")
+unnest.akw <- data.bioeth.1 %>%
+  filter(!is.na(author.keywords)) %>%
+  unnest_tokens(akw, author.keywords) %>%
+  anti_join(stop_words, by = c("akw" = "word"))
+
+# data.bioeth.1 minus "ethics", "bioethics", and numbers
+akw.art.final <- data.bioeth.1 %>%
+  filter(!is.na(author.keywords)) %>%
+  unnest_tokens(akw, author.keywords) %>%
+  anti_join(stop_words, 
+            by = c("akw" = "word")) %>%
+  filter(akw != "bioethics" &
+           akw != "ethics") %>%
+  filter(!str_detect(akw, "\\d"))
+
+# count keyword occurence (with years column)
+akw.j.noyears.final <- akw.art.final %>%
+  filter(pub.type=="J") %>%
+  select(akw, pub.name) %>%
+  rename(keyword = akw, journal = pub.name) %>%
+  count(keyword, journal, sort = TRUE)
+
+# count keyword occurence (no years column)
+akw.j.years.final <- akw.art.final %>%
+  filter(pub.type=="J") %>%
+  select(akw, pub.name, year.pub) %>%
+  rename(keyword = akw, journal = pub.name, year = year.pub) %>%
+  count(keyword, journal, year, sort = TRUE)
+
+# overall (not by year) tf-idf
+
+# count word occurence within each journal (for tf-idf)
+total.words <- akw.j.noyears.final %>% 
+  group_by(journal) %>% 
+  summarize(total = sum(n))
+
+# join with overall word (no years) counts (for tf-idf)
+journal.words <- left_join(akw.j.noyears.final,
+                           total.words)
+
+# get tf-idf
+journal.words <- journal.words %>%
+  bind_tf_idf(keyword, journal, n)
+
+# tf-idf over time
+
+# create character vector of years 
+years <- seq(from = 1990, to = 2018, by = 1)
+years <- as.character(years)
+
+# use number of years (length of vector) to create relevant lists
+journal.words.years <- vector("list", length(years))
+total.words.years <- vector("list", length(years))
+akw.j.years.loop <- vector("list", length(years))
+
+# get tf-idf by year
+for (i in 1:length(journal.words.years)) {
+  total.words.years[[i]] <- akw.j.years.final %>%
+    filter(year == years[i]) %>%
+    group_by(journal) %>%
+    summarise(total = sum(n))
+  
+  akw.j.years.loop[[i]] <- akw.j.years.final %>%
+    filter(year == years[i])
+  
+  journal.words.years[[i]] <- left_join(akw.j.years.loop[[i]],
+                                        total.words.years[[i]])
+  
+  journal.words.years[[i]] <- journal.words.years[[i]] %>%
+    bind_tf_idf(keyword, journal, n)
+}
+
+# collapse tf-idf list into single data frame
+test.bind <- bind_rows(journal.words.years)
+
+# create tibble where columns are unique keywords and years appearing
+
+# get unique keywords
+keyword.evo <- test.bind %>%
+  select(keyword) %>%
+  unique() 
+
+# create years variable
+keyword.evo$num.yrs.active <- NA
+
+# fill-in variable
+for (i in 1:nrow(keyword.evo)) {
+  keyword.evo$num.yrs.active[i] <- test.bind %>%
+    filter(keyword == keyword.evo$keyword[i]) %>%
+    summarise(n_distinct(year)) %>%
+    as.numeric()
+}
+# This is very slow; figure out how to improve speed.
+
+# create non-consecutive logical indicator
+# when not used in more than one year == NA
+keyword.evo$consec <- NA
+for (i in 1:nrow(keyword.evo)) {
+  year.temp <- test.bind %>%
+    filter(keyword == keyword.evo$keyword[i]) %>%
+    distinct(year) %>%
+    as.matrix() %>%
+    diff() 
+  
+  if (length(year.temp) >= 1) {
+    keyword.evo$consec[i] <- all(year.temp == 1)
+  } else {
+    keyword.evo$consec[i] <- NA
+  } 
+  
+}
+
+# look at distribution for each category
+
+# get consecutively used keywords
+keyword.evo.consec.true <- keyword.evo %>%
+  filter(consec == TRUE)
+
+# get info on consecutively used keywords
+consec.true <- test.bind %>%
+  filter(keyword  %in% keyword.evo.consec.true$keyword) %>%
+  select(-n) %>%
+  count(year, sort = TRUE) %>%
+  filter(year != 2018) %>%
+  mutate(consec = TRUE)
+
+# get recurrent keywords
+keyword.evo.consec.false <- keyword.evo %>%
+  filter(consec == FALSE)
+
+# get info on recurrent keywords
+consec.false <- test.bind %>%
+  filter(keyword  %in% keyword.evo.consec.false$keyword) %>%
+  select(-n) %>%
+  count(year, sort = TRUE) %>%
+  filter(year != 2018) %>%
+  mutate(consec = FALSE)
+
+# get single-use keywords
+keyword.evo.consec.na <- keyword.evo %>%
+  filter(is.na(consec))
+
+# get info on single-use keywords
+consec.na <- test.bind %>%
+  filter(keyword  %in% keyword.evo.consec.na$keyword) %>%
+  select(-n) %>%
+  count(year, sort = TRUE) %>%
+  filter(year != 2018) %>%
+  mutate(consec = NA)
+
+# collpase info objects into single object
+consec.evo <- bind_rows(consec.true, 
+                        consec.false,
+                        consec.na)
+
+# get the pairwise differences in the years during which each
+# keyword is used
+
+# create empty list in which to store results
+year.diffs <- vector("list", length = nrow(test.bind))
+
+# populate list/get the pairwise usage differences
+for (i in 1:length(year.diffs)) {
+  year.diffs[[i]] <- test.bind %>%
+    filter(keyword == keyword.evo$keyword[i]) %>%
+    distinct(year) %>%
+    as.matrix() %>%
+    diff() %>%
+    as.data.frame() %>%
+    mutate(keyword = keyword.evo$keyword[i]) # very slow
+}
+
+# make list a single data frame
+year.diffs <- bind_rows(year.diffs)
+
+# create a position variable to indicate position in the 
+# difference vector of years-used for each keywords
+year.diffs <- year.diffs %>%
+  select(-.) %>% 
+  rename(diffs = year) %>%
+  group_by(keyword) %>%
+  mutate(position = 1:n()) 
+
+# ungroup so later results have no problems
+year.diffs <- year.diffs %>%
+  ungroup()
+
+
+
+###
+### conceptual structure networks
+###
+
+# create bigrams/edge list
+akw.bigrams.noyears <- data.bioeth.1 %>%
+  filter(!is.na(author.keywords)) %>%
+  filter(!str_detect(author.keywords, "\\d")) %>%
+  group_by(year.pub) %>%
+  unnest_tokens(akw.bi, 
+                author.keywords, 
+                token = "ngrams", 
+                n = 2) %>%
+  separate(akw.bi, 
+           c("word1", "word2"), 
+           sep = " ") %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word) %>%
+  filter(word1 != "bioethics" 
+         & word1 != "ethics") %>%
+  filter(word2 != "bioethics" 
+         & word2 != "ethics") %>%
+  ungroup()
+
+# remove duplicates
+akw.bigrams.noyears <- akw.bigrams.noyears %>%
+  filter(!duplicated(akw.bigrams.noyears))
+
+# get edge weights 
+bigram.counts.noyears <- akw.bigrams.noyears %>%
+  count(word1, word2, sort = TRUE)
+
+# another way to accomplish same task
+# bigram.counts.noyears <- akw.bigrams.noyears %>%
+# add_count(word1, word2)
+
+# create undirected network from weighted bigram data
+network <- bigram.counts.noyears %>%
+  rename(weight = n) %>%
+  graph_from_data_frame(directed = FALSE)
+
+# create focal attribute data for keywords in the network
+
+# create empty list in which to store results
+#focal.attribs <- vector("list", length = nrow(unique.akw.final)) 
+#  # length is number of variables about keyword
+#for (i in 1:length(focal.attribs)) {
+#  focal.attribs[[i]] <- bigram.counts.noyears %>% 
+#    filter(word1 == unique.akw.final$akw[i]) %>% 
+#    summarise(word = unique.akw.final$akw[i],
+#              sd=sd(n), 
+#              min=min(n), 
+#              max=max(n), 
+#              mean=mean(n), 
+#              range=max(n)-min(n), 
+#              iqr = stats::IQR(n),
+#              degree=n()) 
+#}
+
+# create data frame from list
+#focal.attribs.tbl <- bind_rows(focal.attribs)
+
+# get degree distribution
+#unique.deg.network <- focal.attribs.tbl %>%
+#  count(degree, sort = TRUE)
+
+# supposedly fixes omission of words that appear in word2 but not word1
+#focal.attribs1 <- vector("list", length = nrow(unique.akw.final)) 
+# length is number of variables about keyword
+#for (i in 1:length(focal.attribs1)) {
+#  if (unique.akw.final$akw[i] %in% bigram.counts.noyears$word1){
+#    focal.attribs1[[i]] <- bigram.counts.noyears %>% 
+#      filter(word1 == unique.akw.final$akw[i]) %>% 
+#      summarise(word = unique.akw.final$akw[i],
+#                sd=sd(n), 
+#                min=min(n), 
+#                max=max(n), 
+#                mean=mean(n), 
+#                range=max(n)-min(n), 
+#                iqr = stats::IQR(n),
+#                degree=n()) 
+#  } else if (!unique.akw.final$akw[i] %in% bigram.counts.noyears$word1 &
+#             unique.akw.final$akw[i] %in% bigram.counts.noyears$word2) {
+#    focal.attribs1[[i]] <- bigram.counts.noyears %>% 
+#      filter(word2 == unique.akw.final$akw[i]) %>% 
+#      summarise(word = unique.akw.final$akw[i],
+#                sd=sd(n), 
+#                min=min(n), 
+#                max=max(n), 
+#                mean=mean(n), 
+#                range=max(n)-min(n), 
+#                iqr = stats::IQR(n),
+#                degree=n()) 
+#  }
+#}
+#focal.attribs1 <- bind_rows(focal.attribs1)
+
+# community structure
+
+# edge betweenness DO NOT RUN!
+# net.comm <- cluster_edge_betweenness(network, directed = FALSE)
+
+# louvain algorithm
+net.comm.louvain <- cluster_louvain(network)
+
+# label propagation 
+comm.label.prop <- cluster_label_prop(network)
+
+# infomap
+comm.info.map <- cluster_infomap(network)
+
+# walktrap
+comm.walk.trap <- cluster_walktrap(network)
+
+# temporal networks
+
+# remove rows with numbers and duplicates
+akw.art.final <- data.bioeth.1 %>%
+  filter(!is.na(author.keywords)) %>%
+  unnest_tokens(akw, author.keywords) %>%
+  anti_join(stop_words, 
+            by = c("akw" = "word")) %>%
+  filter(akw != "bioethics" &
+           akw != "ethics") %>%
+  filter(!str_detect(akw, "\\d"))
+
+# create bigram data with years (for edgelist)
+akw.bigrams.years <- data.bioeth.1 %>%
+  filter(!is.na(author.keywords)) %>%
+  filter(!str_detect(author.keywords, "\\d")) %>%
+  group_by(year.pub) %>%
+  unnest_tokens(akw.bi, 
+                author.keywords, 
+                token = "ngrams", 
+                n = 2) %>%
+  separate(akw.bi, 
+           c("word1", "word2"), 
+           sep = " ") %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word) %>%
+  filter(word1 != "bioethics" 
+         & word1 != "ethics") %>%
+  filter(word2 != "bioethics" 
+         & word2 != "ethics") %>%
+  ungroup()
+
+# remove duplicates
+akw.bigrams.years <- akw.bigrams.years %>%
+  filter(!duplicated(akw.bigrams.years))
+
+# get edge weights
+bigram.counts.years <- akw.bigrams.years %>%
+  count(word1, word2, year.pub, sort = TRUE)
+
+# move weight to third column for igraph
+bigram.counts.years <- bigram.counts.years[,c("word1",
+                                              "word2",
+                                              "n",
+                                              "year.pub")]
+
+# check for duplicates in non-yearly version
+duplicates <- bigram.counts.noyears %>%
+  unite(bigram, word1, word2, sep = " ")
+dup.vec <- duplicates %>%
+  duplicated() # none true 
+
+# create decade variable for longitudinal bigrams
+# CHANGE TO case_when()
+bigram.counts.decades <- bigram.counts.years %>%
+  mutate(decade = ifelse(year.pub %in% 1970:1979, "1970s",
+                         ifelse(year.pub %in% 1980:1989,"1980s",
+                                ifelse(year.pub %in% 1990:1999, "1990s",
+                                       ifelse(year.pub %in% 2000:2009, "2000s", 
+                                              ifelse(year.pub %in% 2010:2018, "2010s", NA))))))
+bigram.counts.decades$decade <- factor(bigram.counts.decades$decade,
+                                       levels = c("1970s", "1980s", 
+                                                  "1990s", "2000s",
+                                                  "2010s"))
+
+# create table with descriptives for each time period
+
+# years was already created (vector 1990-2010)
+network.years <- vector("list", length = length(years))
+stats.years <- vector("list", length = length(years))
+for (i in 1:length(network.years)) {
+  # create network
+  network.years[[i]] <- bigram.counts.years %>%
+    filter(year.pub == years[i]) %>%
+    rename(weight = n) %>%
+    select(-year.pub) %>%
+    graph_from_data_frame(directed = FALSE)
+  
+  network.years[[i]] <- simplify(network.years[[i]], 
+                                 remove.multiple = FALSE,
+                                 remove.loops = TRUE)
+  
+  # create descriptive stats object
+  stats.years[[i]] <- bigram.counts.years %>%
+    filter(year.pub == years[i]) %>%
+    summarise(num.nodes = vcount(network.years[[i]]),
+              num.edges = ecount(network.years[[i]]),
+              density = edge_density(network.years[[i]],
+                                     loops = FALSE),
+              year = years[i])
+}
+
+# do the same for decades
+decades <- c("1990s", "2000s", "2010s")
+network.decades <- vector("list", 
+                          length = length(decades))
+stats.decades <- vector("list", length = length(decades))
+for (i in 1:length(decades)) {
+  # create network
+  network.decades[[i]] <- bigram.counts.decades %>%
+    filter(decade == decades[i]) %>%
+    rename(weight = n) %>%
+    select(-year.pub) %>%
+    graph_from_data_frame(directed = FALSE)
+  
+  network.years[[i]] <- simplify(network.decades[[i]], 
+                                 remove.multiple = FALSE,
+                                 remove.loops = TRUE)
+  
+  # create descriptive stats object
+  stats.decades[[i]] <- bigram.counts.decades %>%
+    filter(decade == decades[i]) %>%
+    summarise(num.nodes = vcount(network.decades[[i]]),
+              num.edges = ecount(network.decades[[i]]),
+              density = edge_density(network.decades[[i]],
+                                     loops = FALSE),
+              decade = decades[i])
+}
+
+# combine longitudinal descriptives
+stats.combined <- bind_rows(stats.years, stats.decades)
+stats.graph <- stats.combined %>%
+  filter(!is.na(year), year < 2018) %>%
+  select(num.edges, num.nodes, year) 
+stats.melt <- melt(data = stats.graph, id.vars = "year", 
+                   measure.vars = c("num.edges","num.nodes"),
+                   na.rm = TRUE) 
+
+# calculate above stats for overall (1990-2018) network
+# remove self loops
+network <- simplify(network, remove.multiple = FALSE,
+                    remove.loops = TRUE)
+
+# create descriptive stats object
+stats.collapsed <- bigram.counts.decades %>%
+  filter(decade == decades[i]) %>%
+  summarise(num.nodes = vcount(network),
+            num.edges = ecount(network),
+            density = edge_density(network,
+                                   loops = FALSE),
+            decade = "1990-2018")
+
+# combine longitudinal and cross-sectional summary tables
+stats.combined <- bind_rows(stats.combined,
+                            stats.collapsed)
+
+# what is the lifespan of a tie?
+bigram.life <- bigram.counts.years %>%
+  unite(bigram, word1, word2, sep = " ") %>% 
+  group_by(bigram) %>%
+  summarise(lifespan = max(year.pub) - min(year.pub),
+            mean.weight = mean(n),
+            max.weight = max(n),
+            min.weight = min(n),
+            sd.weight = sd(n))
+
+for (i in 1:nrow(bigram.life)) {
+  if (bigram.life$lifespan[i] == 0) {
+    bigram.life$lifespan[i] <- 1
+    bigram.life$sd.weight[i] <- NA
+  }
+}
+
+# create bipartite cross-sectional network
+akw.art <- akw.art.final %>%
+  select(akw, article.id) %>%
+  as.data.frame()
+igraph.noyears <- graph_from_data_frame(akw.art, directed = FALSE)
+
+# set modes
+V(igraph.noyears)$type <- V(igraph.noyears)$name %in% akw.art[,2] 
+# the second column of edges is TRUE type
+
+# create tidy version of above graph
+tidygraph.noyears <- as_tbl_graph(igraph.noyears)
+
+
+
+
+
+###
+### bieothics relational analyses
+###
+
+# getting conceptual profile data
+
+# get unique words and their counts
+data("stop_words")
+unique.akw <- data.bioeth.1 %>%
+  filter(!is.na(author.keywords)) %>%
+  unnest_tokens(akw, author.keywords) %>%
+  anti_join(stop_words, by = c("akw" = "word")) %>%
+  filter(akw != "bioethics" & akw != "ethics") %>%
+  count(akw, sort = TRUE)
+
+# which cases contain numbers
+unique.akw.nonum <- grepl("\\d", unique.akw$akw)
+
+# remove cases with numbers
+unique.akw.final <- unique.akw %>%
+  filter(unique.akw.nonum==FALSE)
+
+# get focal attributes about keywords
+
+# create empty vector 
+focal.attribs1 <- vector("list", length = nrow(unique.akw.final)) 
+# length is number of variables about keyword
+
+# populate list with focal attribute data
+for (i in 1:length(focal.attribs1)) {
+  if (unique.akw.final$akw[i] %in% bigram.counts.noyears$word1){
+    focal.attribs1[[i]] <- bigram.counts.noyears %>% 
+      filter(word1 == unique.akw.final$akw[i]) %>% 
+      summarise(word = unique.akw.final$akw[i],
+                sd=sd(n), 
+                min=min(n), 
+                max=max(n), 
+                mean=mean(n), 
+                range=max(n)-min(n), 
+                iqr = stats::IQR(n),
+                degree=n()) 
+  } else if (!unique.akw.final$akw[i] %in% bigram.counts.noyears$word1 &
+             unique.akw.final$akw[i] %in% bigram.counts.noyears$word2) {
+    focal.attribs1[[i]] <- bigram.counts.noyears %>% 
+      filter(word2 == unique.akw.final$akw[i]) %>% 
+      summarise(word = unique.akw.final$akw[i],
+                sd=sd(n), 
+                min=min(n), 
+                max=max(n), 
+                mean=mean(n), 
+                range=max(n)-min(n), 
+                iqr = stats::IQR(n),
+                degree=n()) 
+  }
+}
+
+# collapse list into single object
+focal.attribs1 <- bind_rows(focal.attribs1)
+
+# previous problem solving
+#weird.cases <- focal.attribs.tbl %>%
+#  filter(degree == 0)
+
+#weird.cases$problem <- NA
+
+#for (i in 1:nrow(weird.cases)) {
+#  if (weird.cases$word[i] %in% bigram.counts.noyears$word1 |
+#      weird.cases$word[i] %in% bigram.counts.noyears$word2) {
+#    weird.cases$problem[i] <- TRUE
+#  } else {
+#    weird.cases$problem[i] <- FALSE
+#  }
+#}
+
+# get clustering coeffient for each node/keyword in 
+# keyword-keyword network
+
+# collapse bipartite network
+keyword.projection <- bipartite.projection(tidygraph.noyears,
+                                           which = "false")
+
+# get transitivity/clustering
+keyword.projection.lcc <- transitivity(keyword.projection,
+                                       type = c("barrat"))
+
+# make tibble and add keyword name as a variable
+keyword.projection.lcc <- as_tibble(keyword.projection.lcc) %>%
+  mutate(keyword = V(keyword.projection)$name)
+
+# create final keyword attribute data set
+keyword.data.0 <- left_join(focal.attribs1,
+                            keyword.projection.lcc,
+                            by = c("word" = "keyword"))
+# rename lcc
+keyword.data.0 <- keyword.data.0 %>%
+  rename(lcc = value)
+
+# recode consec to intuitive names
+keyword.evo$consec[keyword.evo$consec==TRUE] <- "persist"
+keyword.evo$consec[keyword.evo$consec==FALSE] <- "recur"
+keyword.evo$consec[is.na(keyword.evo$consec)] <- "single"
+
+# add keyword.evo data to keyword.data.0
+keyword.data.0 <- left_join(keyword.data.0, keyword.evo,
+                            by = c("word" = "keyword"))
+
+
+
+
+
+
+#####
+### get subset of paper_i's keywords
+
+# create empty list for sets of node ids
+#paper.keywords <- vector(mode = "list", length = 
+#                          length(V(igraph.noyears)[type==FALSE]))
+
+# create function to get a paper's keywords
+get.keywords <- function(paper.id) { # paper.id must be numeric
+  #data.bioeth.1 %>% 
+  #  filter(article.id == paper.id) %>% 
+  #  select(author.keywords)
+  
+  akw.art.final$akw[akw.art.final$article.id == paper.id] %>% 
+    as_tibble() %>% 
+    rename(akw = value)
+}
+
+# create list for which each element is a paper's keyword(s)
+paper.ego <- lapply(data.bioeth.1$article.id, get.keywords)
+# this works but does not provide article identifiers
+# could alter function such that each list element is 
+# a list containing two elements: article id and keywords
+
+
+# get keyword ego networks  
+# WHY DO I NEED THIS?
+# keyword.ego <- ego(graph = keyword.projection,
+#                    order = 1,
+#                    nodes = V(keyword.projection),
+#                    mode = "all")
+
+
+
+
+
+# if weight > 1
+#tidy.proj <- as_tbl_graph(keyword.projection)
+#tidy.proj %>% 
+#  activate(edges) %>% 
+#  filter(from == 1) %>% 
+#  as_tibble() %>% 
+#  summarise(num.alters = n(),
+#            max.weight = max(weight),
+#            range.weight = max.weight - min(weight),
+#            sd.weight = sd(weight))
+
+
+#####
+### save vector of node/keyword id names aka dictionary/look up table
+
+# create function to get a word's id
+get.id <- function(x){
+  which(V(keyword.projection)$name == x)
+}
+
+# apply function to all unique words
+node.key <- sapply(unique.akw.final$akw, get.id)
+
+# make look up table/key/dictionary
+node.key <- node.key %>% 
+  as_tibble() %>% 
+  tibble::rownames_to_column(var = "keyword") %>% 
+  rename(node.id = value) 
+
+
+
+#####
+### get subset of bipartite network based upon names
+
+# need to add num.id to paper.ego tibble elements
+
+# add num.id
+paper.ego <- lapply(paper.ego, function(i) {
+  inner_join(i, node.key, by = c("akw" = "keyword" ))
+})
+
+# create empty list in which to store results
+#ego.filtered <- vector(mode = "list", length = paper.ego)
+
+# filter keyword.projection based upon paper.ego results/list elements
+ego.nets <- lapply(paper.ego, function(i){
+  induced_subgraph(keyword.projection, i$node.id)
+})
+
+# save edge weights in new object (MAY BE UNNECESSARY)
+
+# save standarized weights in a new object?
+# on what to standarize: whole network, ego network?
+
+
+
+#####
+### calculate descriptive stats of weight distribution
+
+# write function to calculate descriptives for an ego network
+# provide a graph (x)
+describe.ego.net <- function(x){
+  if (length(E(x)$weight) == 0) {
+    as_tibble(E(x)$weight) %>% 
+      summarise(degree = n(),
+                mean.weight = NA, # number of edges, remove
+                median.weight = NA,
+                min.weight = NA,
+                max.weight = NA,
+                range.weight = NA,
+                sd.weight = NA) 
+  } else {
+    as_tibble(E(x)$weight) %>% 
+      summarise(degree = n(), # number of edges, remove
+                mean.weight = mean(value),
+                median.weight = median(value),
+                min.weight = min(value),
+                max.weight = max(value),
+                range.weight = max.weight - min.weight,
+                sd.weight = sd(value)) 
+  }
+} # could also mark missing after summary creation with separate function
+
+# get descriptives for all ego networks
+paper.ego.weight.desc <- lapply(ego.nets, describe.ego.net)
+# might add paper id to output elements
+
+# make a tibble to merge with paper-as-unit data
+paper.ego.weight.desc <- bind_rows(paper.ego.weight.desc)
+
+### merge with paper-as-unit data 
+data.bioeth.1 <- bind_cols(data.bioeth.1, paper.ego.weight.desc)
+
+# remove the now unnecessary object
+rm(paper.ego.weight.desc)
+
+#####
+### add keyword type variable (i.e., persist, recur, single)
+# number of persist
+# number of recur
+# number of single
+# total number of keywords
+# description about number of years active (NEED TO DO THIS)
+
+get.keyword.types <- function(ego.network){ 
+  if(class(ego.network) == "igraph") {
+    if(length(V(ego.network)) > 0){
+      as_tibble(V(ego.network)$name) %>% 
+        left_join(keyword.evo, by = c("value" = "keyword")) %>% 
+        summarise(num.single = sum(consec == "single"),
+                  num.recur = sum(consec == "recur"),
+                  num.persist = sum(consec == "persist"),
+                  num.keywords = n(),
+                  prop.single = num.single / num.keywords,
+                  prop.recur = num.recur / num.keywords,
+                  prop.persist = num.persist / num.keywords)
+    } else {
+      as_tibble(V(ego.network)$name) %>% 
+        left_join(keyword.evo, by = c("value" = "keyword")) %>% 
+        summarise(num.single = NA,
+                  num.recur = NA,
+                  num.persist = NA,
+                  num.keywords = NA,
+                  prop.single = NA,
+                  prop.recur = NA,
+                  prop.persist = NA)
+    }
+  } else {
+    stop("Input object not of igraph class.")
+  }
+}
+
+# get information on papers' keyword type usage
+paper.keyword.type.desc <- lapply(ego.nets, get.keyword.types)
+
+# collapse from list into data frame
+paper.keyword.type.desc <- bind_rows(paper.keyword.type.desc)
+
+# add to main data
+data.bioeth.1 <- bind_cols(data.bioeth.1, paper.keyword.type.desc)
+
+# remove now unnecessary object
+rm(paper.keyword.type.desc)
+
+
+####
+### create the non-keyword-related variables
+###
+
+### paper level
+
+# number of authors
+data.bioeth.1 <- data.bioeth.1 %>% 
+  mutate(num.authors = str_count(authors, ";") + 1)
+
+# number of institutions
+data.bioeth.1 <- data.bioeth.1 %>% 
+  mutate(num.addresses = str_count(author.address, "\\[")) 
+# a [] pair introduces each unique address 
+
+# number of cited references
+data.bioeth.1 <- data.bioeth.1 %>% 
+  mutate(num.refs = str_count(cited.refs, ";") + 1)
+
+```
+
+## Community Detection
+
+
+In order to run topic models with the article's abstracts, it is necessary to know _k_, the number of topics. However, this value is unknown, and there is no non-arbitrary number or range with which to begin. As such, I will start with the number of communities identified from the keyword-keyword network (`network`), which is a single mode weighted network. 
+
+```{r number.communities}
+# louvain algorithm
+comm_louvain <- cluster_louvain(network)
+
+# label propagation algorithm
+comm_label_prop <- cluster_label_prop(network)
+
+
+#membership(net.comm)
+#communities(net.comm)
+#crossing(net.comm, network)
+#algorithm(net.comm)
+#is_hierarchical(net.comm)
+#plot(as.dendrogram(net.comm))
+
+```
+
+The estimates for community number vary quite widely, but, given that only the louvain (63) and label propagation (85) results present a realistic task, I will use the ldatuning package to check fit measures where _k_ varies between 60 and 90. *Note:* If you would like a detailed comparison of the igraph community detection methods and their relative performances on difference types of networks, I suggest [this](https://www.nature.com/articles/srep30750); the other methods produced wildly divergent estimates for the number of communities (~800-~3000).
+
+However, before moving further, let's check out the communities themselves. I first examine the community igraph object obtained with the louvain algorithm. Printing the object gives a preview of the keywords in the first community and indicates that we have 63 groups and a graph modularity of .47. The next function `sizes()` presents a three-row table; within each row, the top cell indicates the community id and the bottom cell indicates the number of words within it. Finally, return to the short list of the first community members. There obviously seems to be an issue with this method (at least for the first community) because most of the keywords do not intuitively belong together. 
+```{r community_structure_exam_louvain}
+# print basic summary
+comm_louvain
+
+# size of each community
+sizes(comm_louvain)
+```
+
+The igraph package makes it easy to visually inspect the sizes of the communities. In the graph using the `plot()` function, we get a graph in which the x axis lists the communities and the y axis reflects their sizes. This presentation does not easily convey results; the second graph is a histogram. Between the two, it should be relatively easy to see that the vast majority of communities are rather small, but there are a few containing many keywords. I will interpret this finding shortly below, after I get the same information for the other community object.  
+```{r vis_comm_louvain}
+plot(sizes(comm_louvain))
+hist(sizes(comm_louvain))
+```
+
+
+
+Let's replicate the above examination on the label propagation community object. We arrive at 73 communities with this algorithm, but the modularity is drastically lower at .059! We should be skeptical moving forward because there is certainly more conceptual coherence within the bioethics literature. The largest community has 4,609 members, which is problematic: there is likely more nuance within any given subfield of bioethics than that. Further, so many isolated communities with 2-5 members does not correspond to intuitive sense about the field. I will not bother visualizing these results. Do note though that there is at least a bit more coherence in the group of keywords. For example, the words "informed", "consent", and "assent" clearly go together, and words, such as "forms" and "psychoses", relate to the application of this general topic to patient treatment and the process of gaining consent.
+```{r community_structure_exam_labelprop}
+# print basic summary
+comm_label_prop
+
+# size of each community
+sizes(comm_label_prop)
+```
+
+At this point, things seem pretty bleak for the community detection algorithms, so we definitely want to check out the topic modeling approaches. However, before we do that, let's use a different network: one constructed from abstracts instead of keywords. This obviously will change the substantive interpretation of the community structure, but perhaps the keyword network data were simply poorly structured for community detection.[^1]
+
+[^1]: A different interpretation would certainly be the case for the following reason. Communities in the keyword network represent sets of institutionalized positions, what one might consider product categories within the bioethical market. Communities in the abstract network will more likely correspond to the topical or conceptual structure of bioethics discourse.  
+
+The following code create a network in which words within abstracts are connected when they appear within the same abstract and have weights which correspond to the number of abstracts in which they co-occur. 
+```{r network.from.abstracts}
+abstract_bigrams <- data.bioeth.1 %>% 
+  filter(!is.na(abstract)) %>%
+  unnest_tokens(bigram, 
+                abstract, 
+                token = "ngrams", 
+                n = 2) %>%
+  separate(bigram, 
+           c("word1", "word2"), 
+           sep = " ") %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word) %>%
+  filter(word1 != "bioethics" 
+         & word1 != "ethics") %>%
+  filter(word2 != "bioethics" 
+         & word2 != "ethics") 
+
+# create weighted edgelist
+ab_edges_w <- abstract_bigrams %>% 
+  count(word1, word2, sort = TRUE)
+
+# create network
+ab_network <- ab_edges_w %>% 
+  rename(weight = n) %>%
+  graph_from_data_frame(directed = FALSE)
+
+# verify that edge weights are correct
+#setequal(ab_edges_w$n, E(ab_network)$weight)
+```
+
+Now, on to community detection. I will not spend time describing the network here because that is a bit tangential to the purpose of this document.
+```{r number_communities_abstract_network}
+# louvain algorithm
+comm_louvain_ab <- cluster_louvain(ab_network)
+
+# label propagation algorithm
+comm_label_prop_ab <- cluster_label_prop(ab_network)
+```
+
+How do the community structures within these objects differ from the previous two? I will begin as before with the community object based upon the louvain algorithm. Now, we have 300 communities with a modularity of 0.38. We can see from the `sizes()` function that there exists a very large range of community sizes. The first histogram presented illustrates the massive positive skew, and the second histogram, in which I set the maximum x value to 1000, presents the same problem for interpretability. Again, we have a handful of very large topical communities with many tiny communities. 
+```{r community_structure_exam_louvain_ab}
+# general info
+comm_louvain_ab
+
+# community sizes
+sizes(comm_louvain_ab)
+
+# plot size distribution 
+hist(sizes(comm_louvain_ab))
+
+# plot size distribution (truncated x-axis)
+hist(sizes(comm_louvain_ab), xlim = c(0, 1000), breaks = 30)
+```
+
+The label propagation gives a slightly larger number of topical communities (416) with an extremely low modularity score of 0.-29. We observed a large modularity difference between the two algorithms in the keyword networks, as well. The largest community contains almost 22,000 members, but there seems to be more variation among the other community sizes. The majority of the remaining communities are not larger than 400 words, so I will truncate the x axis of the following histogram to help (hopefully) with interpretation. It appears that most communities have below 100 members, but there is a non-negligible contingent that contain a few hundred members. 
+
+```{r community_structure_exam_labelprop_ab}
+# general info
+comm_label_prop_ab
+
+# community sizes
+sizes(comm_label_prop_ab)
+
+# plot size distribution
+hist(sizes(comm_louvain_ab), xlim = c(0, 400), breaks = 30)
+```
+
+Neither of these two community detection algorithms seems to perform notably well. There are other algorithms one could choose, but, in separate analyses, the others performed still worse. It may very well be the topology of **text** networks is too distinct and presents computational issues. 
+
+Likewise, the problem might rest with **this** network. One could try further cleaning the data in order to produce a hopeful change in topology, but this change seems doubtful because I have already engaged in a fair amount of cleaning. Thus, for now, we will see how topic models perform. 
+
+## Topic Models
+
+Topic modeling is an unsupervised form of machine learning: we are asking the function/algorithm to provide us with the topics. We provide a number of documents, the number of topics, and perhaps document-level covariates, and we then receive data on which terms fall within each topic and how the topics vary across documents. This description is of course very crude, and I do not intend this post to constitute an introduction to topic modeling. Rather, I want to compare two methods of arriving at the topical structure of a set of documents. 
+
+The **key** question (at least for me, given my research interests) is precisely the number of topics. Just as community detection can be a difficult and convoluted process for network scientists, identifying k is just as difficult (if not more so at this point in time). 
+
+The ldatuning package has a `FindTopicsNumber()` function that provides a set of diagnostics for models estimated over a set of k values. Let's use this function to estimate the number of k. We will start with the keyword data (as opposed to the abstract data). Yet, before doing using the `FindTopicsNumber()` function, I must create a document term matrix. I begin with `akw.art.final`. Numbers, stop words, bioethics, and ethics have been removed from the `akw` column. The `cast_dtm()` function from the tidytext package makes this task very simple. 
+
+```{r message=FALSE, warning=FALSE}
+article_dtm <- akw.art.final %>% 
+  select(article.id, akw) %>% 
+  count(article.id, akw, sort = TRUE) %>% 
+  cast_dtm(article.id, akw, n)
+```
+
+Now, let's estimate k. I first load the ldatuning package, and then call the function. It requires the document term matrix, the range of topics to be estimated (for which I use 60-90 based upon the community detection results), the metrics from which the performance will be based (I select all available), the Gibbs sampler methods, a seed number for reproducibility, and the number of cores (I use 10 in order to retain two for my normal computing activities while the function is running).
+```{r topic.number, message=FALSE, warning=FALSE}
+library(ldatuning)
+
+num_k_ftn <- FindTopicsNumber(
+  article_dtm,
+  topics = seq(from = 60, to = 90, by = 1),
+  metrics = c("Griffiths2004", 
+              "CaoJuan2009", 
+              "Arun2010", 
+              "Deveaud2014"),
+  method = "Gibbs",
+  control = list(seed = 1234),
+  mc.cores = 10L,
+  verbose = TRUE
+)
+```
+ 
+Now, I want to plot the results. Arun2010 and Deveaud2014 should be minimized, while Grittiths2004 and CaoJuan2009 should be maximized. 
+ 
+```{r}
+FindTopicsNumber_plot(num_k_ftn)
+```
+The results are far from clear, which is normal when estimating k. I am going to choose *64* because it has roughly the best fit among three of the four metrics. In further versions of these analyses, I will replicate analyses on multiple values of k. Note that regardless of the exact value of k, the number of topics best matches the results from the louvain community detection algorithm. 
+
+The above models were estimated using keyword data, which is not particularly desirable because there are so few terms per document. I now want to run models with abstract (that is, the abstracts of the bioethics articles) data. First, I will create a dfm object and then use the quanteda package to convert it into an stm object. This latter step is not absolutely necessary, but it makes easier specifying the components of the `stm()` function.
+```{r selecting.k, message=FALSE, warning=FALSE}
+# get row == abstract keyword
+abstract_words <- data.bioeth.1 %>%
+  filter(!is.na(abstract)) %>%
+  unnest_tokens(word, abstract) %>%
+  anti_join(stop_words, 
+            by = c("word" = "word")) %>%
+  filter(word != "bioethics" &
+           word != "ethics") %>%
+  filter(!str_detect(word, "\\d")) # remove words containing numbers
+
+# get dfm object to give to stm package
+abstract_dfm <- abstract_words %>%
+    count(article.id, word, sort = TRUE) %>%
+    cast_dfm(article.id, word, n)
+
+# convert to stm object (using quanteda)
+library(quanteda)
+abstract_stm <- convert(abstract_dfm, to = "stm")
+```
+
+
+The community detection algorithms provided a starting range for estimating the value of k, but I want to review another option, as well. The stm package has a functionality such that, if you set k equal to zero with spectral initialization, it estimates (a rough starting value for) k, using the algorithm proposed in Lee and Mimno (2014) (see the [vignette](https://cran.r-project.org/web/packages/stm/vignettes/stmVignette.pdf) for further information).  
+```{r stm.to.find.k, eval=FALSE}
+# run stm model to use Lee and Mimno (2014) method
+# to estimate k (see vignette p. 13)
+searchk_0 <- searchK(documents = abstract_stm$documents,
+                     vocab = abstract_stm$vocab,
+                     K = 0,
+                     init.type = "Spectral",
+                     cores = 10)
+summary_searchk_0 <- summary(searchk_0)
+
+```
+
+The code takes longer to run than I want to take each time I compile this file, so I saved the output and will simply load it before calling the `stm()` function. The `searchK()` function returned 80 topics as the appropriate starting amount.
+
+```{r message=FALSE, warning=FALSE}
+stm_0 <- stm(documents = abstract_stm$documents,
+             vocab = abstract_stm$vocab,
+             K = 80,
+             init.type = "Spectral")
+```
+
+There are many diagnostics that should be conducted before settling on a final model. However, the purpose of this exercise is to compare community detection and structural topic modeling methods. So, now that our model has converged, let's check it out. I display in the following block of code the first three topics.
+
+```{r label_topics}
+labelTopics(stm_0, c(1, 2, 3))
+```
+The four metrics provided for each topic each attempt to capture the relative "importance" of the words (ranked from most to least importance) for each topic. You may refer to the vignette for the stm package to see the equations behind each.
+
+The stm package also has a great plotting function to visualize several aspect of the results. Now, I want to plot the 20 topics that occur with the highest proportion across all documents. 
+```{r plot_stm_0}
+plot.STM(stm_0, type = "summary", 
+         text.cex = .9, # scale text
+         topics = c(1:20), # choose top 20 topics (by proportion)
+         n = 4) # list four words for each topic
+
+```
+
+
+## Conclusion
+
+The purpose of this post has been to review the two key ways to identify the topical structure of a set of texts. The community detection methods have performed rather regrettably, but the structural topic models seem to be better. This outcome is good because the stm package makes it easy to use document-level covariates to predict the prevalence of topics. We could now look, for example, at how topics vary over time or by types of authors (e.g., within different countries or disciplines). 
+
+One problem however is that with many topics interpretation can be difficult. Emily Erikson (Yale) has proposed a way to inductively arrive at "themes". Basically, we use the correlation matrix between topics as a weighted network upon which we run community detection algorithms. This approach gives us a relatively small set of themes. We may then more closely interpret trends within and across topics. 
+
+As nice as all of this sounds, I will stop here. Addressing these two issues will be the topic of my next post. 
