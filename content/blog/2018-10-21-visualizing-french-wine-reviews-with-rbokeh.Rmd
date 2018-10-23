@@ -362,10 +362,12 @@ figure(title = "Rating versus vintage of French wines") %>%
             alpha = 0.3,
             xlab = "Vintage",
             ylab = "Points",
-            hover = "<b>Vintage</b>: @vintage<br><b>Points</b>: @points") %>% 
+            hover = "<b>Vintage</b>: @vintage <br>
+            <b>Points</b>: @points") %>% 
   theme_title(text_font_size = "13pt")
 ```
-As you can see, I captialized and made bold vintage and points, and both pieces of information appear in the hover. 
+
+
 
 ### Multiple Plots
 
