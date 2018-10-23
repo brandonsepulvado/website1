@@ -83,5 +83,5 @@ avatar                 = "img/profilepic2.jpg" # path to image in static dir e.g
 # gravatar             = ""                # gravatar hash. see https://en.gravatar.com/site/implement/hash/. do not use in the same time as avatar
 
 # The following are DEPRECATED.
-gatracker              = "XYZ" # use googleAnalytics instead
-initials               = "ad"  # displayed on single post page; deprecated in v0.3.0.
+gatracker              = "" # use googleAnalytics instead
+initials               = ""  # displayed on single post page; deprecated in v0.3.0.

@@ -12,6 +12,15 @@
     
     
     <item>
+      <title>Visualizing French wine reviews with rbokeh</title>
+      <link>/blog/visualizing-french-wine-reviews-with-rbokeh/</link>
+      <pubDate>Sun, 21 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/visualizing-french-wine-reviews-with-rbokeh/</guid>
+      <description>Purpose of this post Although I love French wine, I do not intend in this post to conduct a detailed statistical investigation into wine, per se; rather, I want to explore a new (for me) visualization package in R: rbokeh. I typically use ggplot2 for most of my visualizations. However, rbokeh produces interactive graphics. I particularly like the idea of programmers being able not only to convey in a static manner a single insight, but also to embed enough information within a figure that the consumer can explore the figure in further detail.</description>
+    </item>
+    
+    <item>
       <title>Conceptual Structure: Community Detection Versus Topic Models</title>
       <link>/blog/conceptual-structure-community-detection-versus-topic-models/</link>
       <pubDate>Thu, 27 Sep 2018 00:00:00 +0000</pubDate>
