@@ -19,21 +19,21 @@ blog  = "blog/:slug/"
 
 [[menu.main]]
 name                   = "Blog"
-weight                 = -120
+weight                 = -110
 identifier             = "blog"
 url                    = "/blog/"
 
 [[menu.main]]
 name                   = "About"
-weight                 = -110
+weight                 = -120
 identifier             = "about"
 url                    = "/about/"
 
 [[menu.main]]
-name                   = "Github"
+name                   = "Presentations"
 weight                 = -90
-identifier             = "code"
-url                    = "/code/"
+identifier             = "presentations"
+url                    = "/presentations/"
 
 [[menu.main]]
 name                   = "Publications"
@@ -50,7 +50,7 @@ cachebuster            = true                          # add the current unix ti
 dateform               = "Jan 2, 2006"
 dateformfull           = "Mon Jan 2 2006 15:04:05 MST"
 description            = "Computational Social Science"
-email                  = "bsepulva@nd.edu"
+email                  = "brandon.sepulvado@gmail.com"
 extracssfiles          = [ "/css/override.css" ]       # In your `static` directory, add/remove files as necessary.
 faviconfile            = "img/profilepic2.jpg"
 github                 = "//github.com/brandonsepulvado"
