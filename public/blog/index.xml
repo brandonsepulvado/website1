@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Blog on Brandon Sepulvado</title>
@@ -6,48 +6,10 @@
     <description>Recent content in Blog on Brandon Sepulvado</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sat, 22 Aug 2015 06:42:21 -0700</lastBuildDate>
+    <lastBuildDate>Wed, 12 Aug 2020 06:42:21 -0700</lastBuildDate>
     
 	<atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>Visualizing French wine reviews with rbokeh</title>
-      <link>/blog/visualizing-french-wine-reviews-with-rbokeh/</link>
-      <pubDate>Sun, 21 Oct 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/blog/visualizing-french-wine-reviews-with-rbokeh/</guid>
-      <description>Purpose of this post Although I love French wine, I do not intend in this post to conduct a detailed statistical investigation into wine, per se; rather, I want to explore a new (for me) visualization package in R: rbokeh. I typically use ggplot2 for most of my visualizations. However, rbokeh produces interactive graphics. I particularly like the idea of programmers being able not only to convey in a static manner a single insight, but also to embed enough information within a figure that the consumer can explore the figure in further detail.</description>
-    </item>
-    
-    <item>
-      <title>Conceptual Structure: Community Detection Versus Topic Models</title>
-      <link>/blog/conceptual-structure-community-detection-versus-topic-models/</link>
-      <pubDate>Thu, 27 Sep 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/blog/conceptual-structure-community-detection-versus-topic-models/</guid>
-      <description>Corpus Topical Structure: Network Analysis and Topic Modeling In this post, I will be reviewing two principal ways to uncover the topical structure of texts: community detection algorithms on networks of words and topic models. The data I use come from the Web of Science. I have records for all articles containing “bioethic” in their titles, abstracts, or keywords, and the time period ranges from 1900-(Jan.)2018. There are roughly 8,500 articles in this data set (I am happy to provide a much more detailed description upon request).</description>
-    </item>
-    
-    <item>
-      <title>Bioethics keywords: part two, lifespan</title>
-      <link>/blog/bioethics-keywords-part-two-lifespan/</link>
-      <pubDate>Mon, 09 Apr 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/blog/bioethics-keywords-part-two-lifespan/</guid>
-      <description>I ended the last post by highlighting differences in keywords of publications related to bioethics on the Web of Science that were used in consecutive years, in multiple but non-consectuive years, and in only a single year. In this post, I will predict the number of years in which a keyword is used to categorize journal articles.
-Visualizations Before employing statistical models, it would be prudent to examine visually the data.</description>
-    </item>
-    
-    <item>
-      <title>Bioethics keywords: part one</title>
-      <link>/blog/bioethics-keywords-part-one/</link>
-      <pubDate>Thu, 05 Apr 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/blog/bioethics-keywords-part-one/</guid>
-      <description>In my first post, I am going to begin what will most likely be a three-part series on the evolution of bioethics publications over the last several decades. This post is mostly about getting the data in order and exploring what the amazing tidytext package has to offer.
-Bioethics has emerged over the last several decades from several branches of ethics (e.g., medical and religious) to form a domain with its own set of conceptual and institutional structures.</description>
-    </item>
     
     <item>
       <title>Hello world!</title>

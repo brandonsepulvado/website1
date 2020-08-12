@@ -14,8 +14,9 @@
 <meta property="og:title" content="Conceptual Structure: Community Detection Versus Topic Models" />
 <meta property="og:description" content="Corpus Topical Structure: Network Analysis and Topic Modeling In this post, I will be reviewing two principal ways to uncover the topical structure of texts: community detection algorithms on networks of words and topic models. The data I use come from the Web of Science. I have records for all articles containing “bioethic” in their titles, abstracts, or keywords, and the time period ranges from 1900-(Jan.)2018. There are roughly 8,500 articles in this data set (I am happy to provide a much more detailed description upon request)." />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="/blog/conceptual-structure-community-detection-versus-topic-models/" /><meta property="article:published_time" content="2018-09-27T00:00:00&#43;00:00"/>
-<meta property="article:modified_time" content="2018-09-27T00:00:00&#43;00:00"/>
+<meta property="og:url" content="/blog/conceptual-structure-community-detection-versus-topic-models/" />
+<meta property="article:published_time" content="2018-09-27T00:00:00+00:00" />
+<meta property="article:modified_time" content="2018-09-27T00:00:00+00:00" />
 
 
 <title>
@@ -42,11 +43,11 @@
 
 
     
-    <link rel="stylesheet" href="/css/reset.css?t=2018-10-23%2016%3a29%3a03.421651%20-0400%20EDT%20m%3d%2b0.043125459">
-    <link rel="stylesheet" href="/css/pygments.css?t=2018-10-23%2016%3a29%3a03.421651%20-0400%20EDT%20m%3d%2b0.043125459">
-    <link rel="stylesheet" href="/css/main.css?t=2018-10-23%2016%3a29%3a03.421651%20-0400%20EDT%20m%3d%2b0.043125459">
+    <link rel="stylesheet" href="/css/reset.css?t=2020-08-12%2015%3a37%3a45.37169%20-0400%20EDT%20m%3d%2b0.053628855">
+    <link rel="stylesheet" href="/css/pygments.css?t=2020-08-12%2015%3a37%3a45.37169%20-0400%20EDT%20m%3d%2b0.053628855">
+    <link rel="stylesheet" href="/css/main.css?t=2020-08-12%2015%3a37%3a45.37169%20-0400%20EDT%20m%3d%2b0.053628855">
     
-        <link rel="stylesheet" href="/css/override.css?t=2018-10-23%2016%3a29%3a03.421651%20-0400%20EDT%20m%3d%2b0.043125459">
+        <link rel="stylesheet" href="/css/override.css?t=2020-08-12%2015%3a37%3a45.37169%20-0400%20EDT%20m%3d%2b0.053628855">
     
 
 
@@ -177,7 +178,10 @@
                 </div>
             </div>
             <div class="markdown">
-                <div id="corpus-topical-structure-network-analysis-and-topic-modeling" class="section level1">
+                
+
+
+<div id="corpus-topical-structure-network-analysis-and-topic-modeling" class="section level1">
 <h1>Corpus Topical Structure: Network Analysis and Topic Modeling</h1>
 <p>In this post, I will be reviewing two principal ways to uncover the topical structure of texts: community detection algorithms on networks of words and topic models. The data I use come from the Web of Science. I have records for all articles containing “bioethic” in their titles, abstracts, or keywords, and the time period ranges from 1900-(Jan.)2018. There are roughly 8,500 articles in this data set (I am happy to provide a much more detailed description upon request).</p>
 <pre class="r"><code>library(tidytext)
