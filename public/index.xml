@@ -12,13 +12,13 @@
     
     
     <item>
-      <title>Hello world!</title>
+      <title>Blog update</title>
       <link>/blog/hello-world/</link>
-      <pubDate>Sun, 01 Apr 2018 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 12 Aug 2020 00:00:00 +0000</pubDate>
       
       <guid>/blog/hello-world/</guid>
-      <description>Welcome to my new website and blog! I am in the process of migrating most of the content from my previous website; this site is built using the blogdown R package along with the Cocoa Hugo theme.
-The blog content will vary widely between posts related to research in progress, those that I write because I enjoy the substantive content, and those I write in order to learn a new tool or package.</description>
+      <description>UNDER CONSTRUCTION!
+I am in the process of reworking the blog content; this section should be updated soon.</description>
     </item>
     
   </channel>
