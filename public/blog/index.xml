@@ -13,10 +13,10 @@
     
     <item>
       <title>Blog update</title>
-      <link>/blog/hello-world/</link>
+      <link>/about/hello-world/</link>
       <pubDate>Wed, 12 Aug 2020 00:00:00 +0000</pubDate>
       
-      <guid>/blog/hello-world/</guid>
+      <guid>/about/hello-world/</guid>
       <description>UNDER CONSTRUCTION!
 I am in the process of reworking the blog content; this section should be updated soon.</description>
     </item>
