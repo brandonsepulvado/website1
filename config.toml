@@ -29,11 +29,11 @@ weight                 = -110
 identifier             = "about"
 url                    = "/about/"
 
-#[[menu.main]]
-#name                   = "Github"
-#weight                 = -90
-#identifier             = "code"
-#url                    = "/code/"
+[[menu.main]]
+name                   = "Github"
+weight                 = -90
+identifier             = "code"
+url                    = "/code/"
 
 [[menu.main]]
 name                   = "Publications"
