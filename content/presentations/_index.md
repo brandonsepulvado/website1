@@ -27,7 +27,7 @@ __Regular__
 
 - July 2020. With Jacob Jett and J. Stephen Downie. "The Social and Conceptual Structure of Synthetic Biology and its Ethical Discourse"; Sunbelt annual conference; International Network for Social Network Analysis; Paris, France.
 
-\- March 2020. "Analyzing Education Discourse with Topic Models"; satRdays DC; Washington, D.C.
+- March 2020. "Analyzing Education Discourse with Topic Models"; satRdays DC; Washington, D.C.
     
 - March 2020. With Debbie Kim. "Applications of NLP for Education Policy Research"; Society for Research on Educational Effectiveness; Arlington, VA.[Cancelled due to COVID-19]
     
