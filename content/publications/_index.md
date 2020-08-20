@@ -6,7 +6,7 @@ title = "Publications"
 +++
 
 
-Sepulvado, Brandon, Jacob Jett, and J. Stephen Downie. Forthcoming. "The Collaborative Structure of Synthetic Biology Ethics.'' _Proceedings of the Association of Information Science Technology_.
+Sepulvado, Brandon, Jacob Jett, and J. Stephen Downie. Forthcoming. "The Collaborative Structure of Synthetic Biology Ethics.'' _Proceedings of the Association of Information Science & Technology_.
 
 Sepulvado, Brandon, Michael Lee Wood, Ethan Fridmanski, Cheng Wang, Matthew J. Chandler, Omar Lizardo, and David Hachen. Forthcoming. "Predicting Homophily and Social Network Connectivity from Dyadic Behavioral Similarity Trajectory Clusters." _Social Science Computer Review_.
 
